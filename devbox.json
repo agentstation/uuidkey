@@ -1,0 +1,14 @@
+{
+    "packages": [
+      "git@2.44.1",
+      "curl@8.6.0",
+      "go@1.22.5",
+      "golangci-lint@1.60.3",
+      "gomarkdoc@1.1.0"
+    ],
+    "shell": {
+      "init_hook": [
+        "PS1=\"$(echo -e \"\\033[1;34m%~\\033[0m \\n\\033[0;32m%n@devbox\\033[0m ➜ \")\""
+      ]
+    }
+  }

@@ -1,0 +1,10 @@
+{
+    "go.buildTags": "test",
+    "gopls": {
+        "buildFlags": ["-tags=test,bench"]
+    },
+    "go.testTags": "test",
+    "go.toolsEnvVars": {
+        "GOFLAGS": "-tags=test,bench"
+    }
+}
