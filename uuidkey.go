@@ -82,8 +82,8 @@ func (k Key) Valid() bool {
 	return hyphenCount == KeyHyphenCount && partLen == KeyPartLength
 }
 
-// UUIDString will validate and convert a given Key into a UUID string.
-func (k Key) UUIDString() (string, error) {
+// UUID will validate and convert a given Key into a UUID string.
+func (k Key) UUID() (string, error) {
 	if !k.Valid() {
 		return "", errors.New("invalid UUID key")
 	}

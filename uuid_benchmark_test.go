@@ -29,7 +29,7 @@ func BenchmarkFromKey(b *testing.B) {
 	key := uuidkey.Key("38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X")
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = key.UUIDString()
+		_, _ = key.UUID()
 	}
 }
 
@@ -73,18 +73,18 @@ func BenchmarkParseInvalid(b *testing.B) {
 	}
 }
 
-func BenchmarkUUIDStringValid(b *testing.B) {
+func BenchmarkUUIDValid(b *testing.B) {
 	key := uuidkey.Key("38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X")
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = key.UUIDString()
+		_, _ = key.UUID()
 	}
 }
 
-func BenchmarkUUIDStringInvalid(b *testing.B) {
+func BenchmarkUUIDInvalid(b *testing.B) {
 	key := uuidkey.Key("38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0") // Invalid key
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = key.UUIDString()
+		_, _ = key.UUID()
 	}
 }

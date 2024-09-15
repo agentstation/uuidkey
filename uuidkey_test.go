@@ -80,18 +80,18 @@ func TestUUIDString(t *testing.T) {
 	validKey := Key("38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X")
 	expectedUUID := "d1756360-5da0-40df-9926-a76abff5601d"
 
-	uuidStr, err := validKey.UUIDString()
+	uuidStr, err := validKey.UUID()
 	if err != nil {
-		t.Errorf("UUIDString() returned an error for valid key: %v", err)
+		t.Errorf("UUID() returned an error for valid key: %v", err)
 	}
 	if uuidStr != expectedUUID {
-		t.Errorf("UUIDString() returned incorrect UUID string. Got %s, want %s", uuidStr, expectedUUID)
+		t.Errorf("UUID() returned incorrect UUID string. Got %s, want %s", uuidStr, expectedUUID)
 	}
 
 	invalidKey := Key("invalid-key")
-	_, err = invalidKey.UUIDString()
+	_, err = invalidKey.UUID()
 	if err == nil {
-		t.Errorf("UUIDString() did not return an error for invalid key")
+		t.Errorf("UUID() did not return an error for invalid key")
 	}
 }
 
@@ -115,7 +115,7 @@ func TestGoogleUUIDRoundtrip(t *testing.T) {
 		}
 
 		// Decode the key back to a UUID string
-		decodedUUIDString, err := key.UUIDString()
+		decodedUUIDString, err := key.UUID()
 		if err != nil {
 			t.Errorf("Error decoding key %s: %v", key, err)
 			continue
@@ -158,7 +158,7 @@ func TestGofrsUUIDRoundtrip(t *testing.T) {
 		}
 
 		// Decode the key back to a UUID string
-		decodedUUIDString, err := key.UUIDString()
+		decodedUUIDString, err := key.UUID()
 		if err != nil {
 			t.Errorf("Error decoding key %s: %v", key, err)
 			continue

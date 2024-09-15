@@ -57,7 +57,7 @@ fmt.Println(key) // Output: 38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X
 
 ```go
 key, _ := uuidkey.Parse("38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X")
-uuid, err := key.UUIDString()
+uuid, err := key.UUID()
 if err != nil {
     log.Fatal("Error:", err)
 }
@@ -93,7 +93,7 @@ Package uuidkey encodes UUIDs to a readable Key format via the Base32\-Crockford
   - [func Parse\(key string\) \(Key, error\)](<#Parse>)
   - [func \(k Key\) Decode\(\) string](<#Key.Decode>)
   - [func \(k Key\) String\(\) string](<#Key.String>)
-  - [func \(k Key\) UUIDString\(\) \(string, error\)](<#Key.UUIDString>)
+  - [func \(k Key\) UUID\(\) \(string, error\)](<#Key.UUID>)
   - [func \(k Key\) Valid\(\) bool](<#Key.Valid>)
 
 
@@ -173,14 +173,14 @@ func (k Key) String() string
 
 String will convert your Key into a string.
 
-<a name="Key.UUIDString"></a>
-### func \(Key\) [UUIDString](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L86>)
+<a name="Key.UUID"></a>
+### func \(Key\) [UUID](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L86>)
 
 ```go
-func (k Key) UUIDString() (string, error)
+func (k Key) UUID() (string, error)
 ```
 
-UUIDString will validate and convert a given Key into a UUID string.
+UUID will validate and convert a given Key into a UUID string.
 
 <a name="Key.Valid"></a>
 ### func \(Key\) [Valid](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L59>)
