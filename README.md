@@ -57,20 +57,33 @@ if err != nil {
 fmt.Println(key) // Output: 38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X
 ```
 
-3. Decode a Key to a UUID:
+3. Decode a Key to a UUID string with validation:
 
 ```go
-key := "38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X"
-decodedKey, err := uuidkey.FromString(key)
+keyStr := "38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X"
+key, err := uuidkey.FromString(keyStr)
 if err != nil {
     log.Fatal("Error:", err)
 }
-uuid, err := decodedKey.UUIDString()
+uuid, err := key.UUIDString()
 if err != nil {
     log.Fatal("Error:", err)
 }
 fmt.Println(uuid) // Output: d1756360-5da0-40df-9926-a76abff5601d
 ```
+
+4. Decode a Key to a UUID string without validation:
+
+```go
+keyStr := "38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X"
+key, err := uuidkey.FromString(keyStr)
+if err != nil {
+    log.Fatal("Error:", err)
+}
+uuid := key.Decode()
+fmt.Println(uuid) // Output: d1756360-5da0-40df-9926-a76abff5601d
+```
+
 
 <!-- gomarkdoc:embed:start -->
 
