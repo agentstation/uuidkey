@@ -1,0 +1,50 @@
+name: Build, Test, Benchmarks, and Coverage
+
+on:
+  push:
+    branches: [ "master" ]
+    tags: [ "v*" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  GITHUB_ORG: ${{ github.repository_owner }}
+
+jobs:
+  lint-vet-build-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.22']
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ matrix.go-version }}
+
+    - name: Run go mod download
+      run: go mod download
+
+    - name: Lint Go Code
+      uses: golangci/golangci-lint-action@v3
+      with:
+        version: latest
+
+    - name: Run vet
+      run: make vet
+
+    - name: Run Benchmarks and Tests
+      run: make bench
+
+    - name: Run Test and generate coverage
+      run: go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.txt
+        flags: unittests
+        name: codecov-umbrella

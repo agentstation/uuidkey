@@ -9,9 +9,9 @@
 <!-- [![Sourcegraph](https://sourcegraph.com/github.com/agentstation/uuidkey/-/badge.svg?style=flat-square)](https://sourcegraph.com/github.com/agentstation/uuidkey?badge) -->
 [![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://pkg.go.dev/github.com/agentstation/uuidkey)
 [![Go Report Card](https://goreportcard.com/badge/github.com/agentstation/uuidkey?style=flat-square)](https://goreportcard.com/report/github.com/agentstation/uuidkey)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/agentstation/uuidkey/ci.yml?style=flat-square)](https://github.com/agentstation/uuidkey/actions)
+![Codecov](https://img.shields.io/codecov/c/github/agentstation/uuidkey.svg?style=flat-square)](https://codecov.io/gh/agentstation/uuidkey)
 [![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/agentstation/uuidkey/master/LICENSE)
-<!-- [![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/agentstation/uuidkey/echo.yml?style=flat-square)](https://github.com/agentstation/uuidkey/actions)
-[![Codecov](https://img.shields.io/codecov/c/github/agentstation/uuidkey.svg?style=flat-square)](https://codecov.io/gh/agentstation/uuidkey) -->
 <!-- [![Forum](https://img.shields.io/badge/community-forum-00afd1.svg?style=flat-square)](https://github.com/agentstation/uuidkey/discussions) -->
 <!-- [![Twitter](https://img.shields.io/badge/twitter-@agentstationHQ-55acee.svg?style=flat-square)](https://twitter.com/agentstationHQ) -->
 
