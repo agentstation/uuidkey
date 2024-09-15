@@ -64,11 +64,14 @@ if err != nil {
 fmt.Println(uuid) // Output: d1756360-5da0-40df-9926-a76abff5601d
 ```
 
-4. Decode a Key to a UUID string without validation:
+4. Decode a Key to a UUID string with basic length validation:
 
 ```go
 key, _ := uuidkey.Parse("38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X")
-uuid := key.Decode()
+uuid, err := key.UUID()
+if err != nil {
+    log.Fatal("Error:", err)
+}
 fmt.Println(uuid) // Output: d1756360-5da0-40df-9926-a76abff5601d
 ```
 
@@ -91,7 +94,7 @@ Package uuidkey encodes UUIDs to a readable Key format via the Base32\-Crockford
 - [type Key](<#Key>)
   - [func Encode\(uuid string\) \(Key, error\)](<#Encode>)
   - [func Parse\(key string\) \(Key, error\)](<#Parse>)
-  - [func \(k Key\) Decode\(\) string](<#Key.Decode>)
+  - [func \(k Key\) Decode\(\) \(string, error\)](<#Key.Decode>)
   - [func \(k Key\) String\(\) string](<#Key.String>)
   - [func \(k Key\) UUID\(\) \(string, error\)](<#Key.UUID>)
   - [func \(k Key\) Valid\(\) bool](<#Key.Valid>)
@@ -104,7 +107,7 @@ Package uuidkey encodes UUIDs to a readable Key format via the Base32\-Crockford
 ```go
 const (
     // KeyLength is the total length of a valid UUID Key, including hyphens.
-    KeyLength = 31
+    KeyLength = 31 // 7 + 1 + 7 + 1 + 7 + 1 + 7 = 31 characters
 
     // KeyPartLength is the length of each part in a UUID Key.
     // A UUID Key consists of 4 parts separated by hyphens.
@@ -159,10 +162,10 @@ Parse converts a Key formatted string into a Key type.
 ### func \(Key\) [Decode](<https://github.com/agentstation/uuidkey/blob/master/codec.go#L62>)
 
 ```go
-func (k Key) Decode() string
+func (k Key) Decode() (string, error)
 ```
 
-Decode will decode a given Key into a UUID string without validation.
+Decode will decode a given Key into a UUID string with basic length validation.
 
 <a name="Key.String"></a>
 ### func \(Key\) [String](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L28>)

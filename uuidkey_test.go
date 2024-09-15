@@ -62,7 +62,10 @@ func TestEncodeDecode(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Encode() returned an unexpected error: %v", err)
 	}
-	decodedUUID := key.Decode()
+	decodedUUID, err := key.Decode()
+	if err != nil {
+		t.Fatalf("Decode() returned an unexpected error: %v", err)
+	}
 
 	if decodedUUID != uuidStr {
 		t.Errorf("Encode/Decode roundtrip failed. Got %s, want %s", decodedUUID, uuidStr)

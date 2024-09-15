@@ -8,7 +8,7 @@ import (
 // Key validation constraint constants
 const (
 	// KeyLength is the total length of a valid UUID Key, including hyphens.
-	KeyLength = 31
+	KeyLength = 31 // 7 + 1 + 7 + 1 + 7 + 1 + 7 = 31 characters
 
 	// KeyPartLength is the length of each part in a UUID Key.
 	// A UUID Key consists of 4 parts separated by hyphens.
@@ -87,5 +87,5 @@ func (k Key) UUID() (string, error) {
 	if !k.Valid() {
 		return "", errors.New("invalid UUID key")
 	}
-	return k.Decode(), nil
+	return k.Decode()
 }

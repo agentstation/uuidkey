@@ -31,7 +31,7 @@ func decode(s string) string {
 
 // Encode will encode a given UUID string into a Key with basic length validation.
 func Encode(uuid string) (Key, error) {
-	if len(uuid) != UUIDLength {
+	if len(uuid) != UUIDLength { // basic length validation to ensure we can encode
 		return "", fmt.Errorf("invalid UUID length: expected %d characters, got %d", UUIDLength, len(uuid))
 	}
 
@@ -58,8 +58,12 @@ func Encode(uuid string) (Key, error) {
 	return Key(e1 + "-" + e2 + "-" + e3 + "-" + e4), nil
 }
 
-// Decode will decode a given Key into a UUID string without validation.
-func (k Key) Decode() string {
+// Decode will decode a given Key into a UUID string with basic length validation.
+func (k Key) Decode() (string, error) {
+	if len(k) != KeyLength { // basic length validation to ensure we can decode
+		return "", fmt.Errorf("invalid Key length: expected %d characters, got %d", KeyLength, len(k))
+	}
+
 	// select the 4 parts of the key string
 	key := string(k) // convert the type from a Key to string
 	s1 := key[0:7]   // [38QARV0]-1ET0G6Z-2CJD9VA-2ZZAR0X
@@ -80,5 +84,5 @@ func (k Key) Decode() string {
 	n3b := n3[4:8]
 
 	// build and return UUID string
-	return (n1 + "-" + n2a + "-" + n2b + "-" + n3a + "-" + n3b + n4)
+	return (n1 + "-" + n2a + "-" + n2b + "-" + n3a + "-" + n3b + n4), nil
 }

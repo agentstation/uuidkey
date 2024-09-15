@@ -37,7 +37,7 @@ func BenchmarkEncode(b *testing.B) {
 	uuid := "d1756360-5da0-40df-9926-a76abff5601d"
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		uuidkey.Encode(uuid)
+		_, _ = uuidkey.Encode(uuid)
 	}
 }
 
@@ -45,7 +45,7 @@ func BenchmarkDecode(b *testing.B) {
 	key := uuidkey.Key("38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X")
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		key.Decode()
+		_, _ = key.Decode()
 	}
 }
 
@@ -53,7 +53,7 @@ func BenchmarkValidateInvalid(b *testing.B) {
 	key := uuidkey.Key("38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0") // Invalid key
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		key.Valid()
+		_ = key.Valid()
 	}
 }
 
