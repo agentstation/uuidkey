@@ -58,9 +58,14 @@ fmt.Println(key) // Output: 38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X
 
 ```go
 key := "38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X"
-uuid, err := uuidkey.FromString(key)
+decodedKey, err := uuidkey.FromString(key)
 if err != nil {
   fmt.Println("Error:", err)
+}
+uuid, err := decodedKey.UUIDString()
+if err != nil {
+  fmt.Println("Error:", err)
+  return
 }
 fmt.Println(uuid) // Output: d1756360-5da0-40df-9926-a76abff5601d
 ```
