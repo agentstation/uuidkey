@@ -49,16 +49,14 @@ import "github.com/agentstation/uuidkey"
 2. Encode a UUID to a Key:
 
 ```go
-uuid := "d1756360-5da0-40df-9926-a76abff5601d"
-key, _ := uuidkey.Encode(uuid)
+key, _ := uuidkey.Encode("d1756360-5da0-40df-9926-a76abff5601d")
 fmt.Println(key) // Output: 38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X
 ```
 
 3. Decode a Key to a UUID string with validation:
 
 ```go
-keyStr := "38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X"
-key, _ := uuidkey.FromString(keyStr)
+key, _ := uuidkey.FromString("38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X")
 uuid, err := key.UUIDString()
 if err != nil {
     log.Fatal("Error:", err)
@@ -69,8 +67,7 @@ fmt.Println(uuid) // Output: d1756360-5da0-40df-9926-a76abff5601d
 4. Decode a Key to a UUID string without validation:
 
 ```go
-keyStr := "38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X"
-key, _ := uuidkey.FromString(keyStr)
+key, _ := uuidkey.FromString("38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X")
 uuid := key.Decode()
 fmt.Println(uuid) // Output: d1756360-5da0-40df-9926-a76abff5601d
 ```
