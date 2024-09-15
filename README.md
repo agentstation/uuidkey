@@ -19,12 +19,14 @@ The `uuidkey` package encodes UUIDs to a readable `Key` format via the Base32-Cr
 
 ## UUID Library Compatibility
 
-This package is designed to work with the following UUID libraries:
+This package is designed to work with any UUID that follows the official UUID specification ([RFC 4122](https://tools.ietf.org/html/rfc4122)). If your UUID implementation adheres to this standard, it should be compatible with this package.
+
+We specifically test and maintain compatibility with the following UUID libraries:
 
 - [github.com/gofrs/uuid](https://github.com/gofrs/uuid) (v4.4.0+)
 - [github.com/google/uuid](https://github.com/google/uuid) (v1.6.0+)
 
-We maintain compatibility with these specific versions as test dependencies. While newer versions may work, these are the ones we officially support and test against.
+While we officially support and test against these specific versions, any UUID library that follows the RFC 4122 specification should work with this package.
 
 ## Installation
 
