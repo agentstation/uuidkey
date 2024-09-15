@@ -50,10 +50,7 @@ import "github.com/agentstation/uuidkey"
 
 ```go
 uuid := "d1756360-5da0-40df-9926-a76abff5601d"
-key, err := uuidkey.Encode(uuid)
-if err != nil {
-    log.Fatal("Error encoding UUID:", err)
-}
+key, _ := uuidkey.Encode(uuid)
 fmt.Println(key) // Output: 38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X
 ```
 
@@ -61,10 +58,7 @@ fmt.Println(key) // Output: 38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X
 
 ```go
 keyStr := "38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X"
-key, err := uuidkey.FromString(keyStr)
-if err != nil {
-    log.Fatal("Error:", err)
-}
+key, _ := uuidkey.FromString(keyStr)
 uuid, err := key.UUIDString()
 if err != nil {
     log.Fatal("Error:", err)
@@ -76,10 +70,7 @@ fmt.Println(uuid) // Output: d1756360-5da0-40df-9926-a76abff5601d
 
 ```go
 keyStr := "38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X"
-key, err := uuidkey.FromString(keyStr)
-if err != nil {
-    log.Fatal("Error:", err)
-}
+key, _ := uuidkey.FromString(keyStr)
 uuid := key.Decode()
 fmt.Println(uuid) // Output: d1756360-5da0-40df-9926-a76abff5601d
 ```
