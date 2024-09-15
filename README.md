@@ -256,20 +256,23 @@ Benchmarking, Testing, & Coverage
 *Your mileage may vary.*
 
 ```sh
-go test -bench=.
+make bench
+Running go benchmarks...
+go test ./... -tags=bench -bench=.
 goos: darwin
 goarch: arm64
 pkg: github.com/agentstation/uuidkey
-BenchmarkValidate-12                 33994471            35.02 ns/op
-BenchmarkParse-12               32470240            35.94 ns/op
-BenchmarkFromKey-12                   4773018           253.2 ns/op
-BenchmarkEncode-12                    3167922           371.5 ns/op
-BenchmarkDecode-12                    5677419           211.7 ns/op
-BenchmarkValidateInvalid-12          1000000000             0.2881 ns/op
-BenchmarkParseValid-12          32319241            35.99 ns/op
-BenchmarkParseInvalid-12        69830540            16.41 ns/op
-BenchmarkUUIDStringValid-12           4940355           246.7 ns/op
-BenchmarkUUIDStringInvalid-12        70641040            16.33 ns/op
+cpu: Apple M2 Max
+BenchmarkValidate-12           	33527211	        35.72 ns/op
+BenchmarkParse-12              	32329798	        36.96 ns/op
+BenchmarkFromKey-12            	 4886846	       250.6 ns/op
+BenchmarkEncode-12             	 3151844	       377.0 ns/op
+BenchmarkDecode-12             	 5587066	       216.7 ns/op
+BenchmarkValidateInvalid-12    	1000000000	         0.2953 ns/op
+BenchmarkParseValid-12         	32424325	        36.89 ns/op
+BenchmarkParseInvalid-12       	70131522	        17.01 ns/op
+BenchmarkUUIDValid-12          	 4693452	       247.2 ns/op
+BenchmarkUUIDInvalid-12        	70141429	        16.92 ns/op
 PASS
-ok      github.com/agentstation/uuidkey    13.168s
+ok  	github.com/agentstation/uuidkey	13.365s
 ```
