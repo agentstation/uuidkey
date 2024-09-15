@@ -17,11 +17,11 @@ func BenchmarkValidate(b *testing.B) {
 	}
 }
 
-func BenchmarkFromString(b *testing.B) {
+func BenchmarkParse(b *testing.B) {
 	s := "38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X"
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = uuidkey.FromString(s)
+		_, _ = uuidkey.Parse(s)
 	}
 }
 
@@ -57,19 +57,19 @@ func BenchmarkValidateInvalid(b *testing.B) {
 	}
 }
 
-func BenchmarkFromStringValid(b *testing.B) {
+func BenchmarkParseValid(b *testing.B) {
 	s := "38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X"
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = uuidkey.FromString(s)
+		_, _ = uuidkey.Parse(s)
 	}
 }
 
-func BenchmarkFromStringInvalid(b *testing.B) {
+func BenchmarkParseInvalid(b *testing.B) {
 	s := "38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0" // Invalid key
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = uuidkey.FromString(s)
+		_, _ = uuidkey.Parse(s)
 	}
 }
 

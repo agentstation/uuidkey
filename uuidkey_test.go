@@ -39,20 +39,20 @@ func TestValid(t *testing.T) {
 	}
 }
 
-func TestFromString(t *testing.T) {
+func TestParse(t *testing.T) {
 	validKey := "38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X"
-	k, err := FromString(validKey)
+	k, err := Parse(validKey)
 	if err != nil {
-		t.Errorf("FromString() returned an error for valid key: %v", err)
+		t.Errorf("Parse() returned an error for valid key: %v", err)
 	}
 	if k != Key(validKey) {
-		t.Errorf("FromString() returned incorrect key. Got %s, want %s", k, validKey)
+		t.Errorf("Parse() returned incorrect key. Got %s, want %s", k, validKey)
 	}
 
 	invalidKey := "invalid-key"
-	_, err = FromString(invalidKey)
+	_, err = Parse(invalidKey)
 	if err == nil {
-		t.Errorf("FromString() did not return an error for invalid key")
+		t.Errorf("Parse() did not return an error for invalid key")
 	}
 }
 

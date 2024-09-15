@@ -29,13 +29,13 @@ func (k Key) String() string {
 	return string(k)
 }
 
-// FromString will convert a Key formatted string type into a Key type.
-func FromString(key string) (Key, error) {
+// Parse converts a Key formatted string into a Key type.
+func Parse(key string) (Key, error) {
 	k := Key(key)
 	if !k.Valid() {
 		return "", errors.New("invalid UUID Key")
 	}
-	return Key(key), nil
+	return k, nil
 }
 
 // Valid verifies if a given Key follows the correct format.

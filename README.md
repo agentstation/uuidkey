@@ -56,7 +56,7 @@ fmt.Println(key) // Output: 38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X
 3. Decode a Key to a UUID string with validation:
 
 ```go
-key, _ := uuidkey.FromString("38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X")
+key, _ := uuidkey.Parse("38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X")
 uuid, err := key.UUIDString()
 if err != nil {
     log.Fatal("Error:", err)
@@ -67,7 +67,7 @@ fmt.Println(uuid) // Output: d1756360-5da0-40df-9926-a76abff5601d
 4. Decode a Key to a UUID string without validation:
 
 ```go
-key, _ := uuidkey.FromString("38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X")
+key, _ := uuidkey.Parse("38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X")
 uuid := key.Decode()
 fmt.Println(uuid) // Output: d1756360-5da0-40df-9926-a76abff5601d
 ```
@@ -90,7 +90,7 @@ Package uuidkey encodes UUIDs to a readable Key format via the Base32\-Crockford
 - [Constants](<#constants>)
 - [type Key](<#Key>)
   - [func Encode\(uuid string\) \(Key, error\)](<#Encode>)
-  - [func FromString\(key string\) \(Key, error\)](<#FromString>)
+  - [func Parse\(key string\) \(Key, error\)](<#Parse>)
   - [func \(k Key\) Decode\(\) string](<#Key.Decode>)
   - [func \(k Key\) String\(\) string](<#Key.String>)
   - [func \(k Key\) UUIDString\(\) \(string, error\)](<#Key.UUIDString>)
@@ -146,14 +146,14 @@ func Encode(uuid string) (Key, error)
 
 Encode will encode a given UUID string into a Key with basic length validation.
 
-<a name="FromString"></a>
-### func [FromString](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L33>)
+<a name="Parse"></a>
+### func [Parse](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L33>)
 
 ```go
-func FromString(key string) (Key, error)
+func Parse(key string) (Key, error)
 ```
 
-FromString will convert a Key formatted string type into a Key type.
+Parse converts a Key formatted string into a Key type.
 
 <a name="Key.Decode"></a>
 ### func \(Key\) [Decode](<https://github.com/agentstation/uuidkey/blob/master/codec.go#L62>)
@@ -258,13 +258,13 @@ goos: darwin
 goarch: arm64
 pkg: github.com/agentstation/uuidkey
 BenchmarkValidate-12                 33994471            35.02 ns/op
-BenchmarkFromString-12               32470240            35.94 ns/op
+BenchmarkParse-12               32470240            35.94 ns/op
 BenchmarkFromKey-12                   4773018           253.2 ns/op
 BenchmarkEncode-12                    3167922           371.5 ns/op
 BenchmarkDecode-12                    5677419           211.7 ns/op
 BenchmarkValidateInvalid-12          1000000000             0.2881 ns/op
-BenchmarkFromStringValid-12          32319241            35.99 ns/op
-BenchmarkFromStringInvalid-12        69830540            16.41 ns/op
+BenchmarkParseValid-12          32319241            35.99 ns/op
+BenchmarkParseInvalid-12        69830540            16.41 ns/op
 BenchmarkUUIDStringValid-12           4940355           246.7 ns/op
 BenchmarkUUIDStringInvalid-12        70641040            16.33 ns/op
 PASS
