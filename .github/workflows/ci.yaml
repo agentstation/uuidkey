@@ -27,7 +27,7 @@ jobs:
         go-version: ${{ matrix.go-version }}
 
     - name: Run go mod download
-      run: go mod download
+      run: make install
 
     - name: Lint Go Code
       uses: golangci/golangci-lint-action@v3
@@ -38,7 +38,7 @@ jobs:
       run: make vet
 
     - name: Run Tests and Generate Coverage
-      run: go test -race -coverprofile=coverage.txt -covermode=atomic ./...
+      run: make coverage
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4

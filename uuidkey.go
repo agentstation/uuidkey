@@ -5,11 +5,20 @@ import (
 	"errors"
 )
 
-// key validation constraint constants
+// Key validation constraint constants
 const (
-	key_len      = 31
-	key_part_len = 7
-	key_hyphens  = 3
+	// KeyLength is the total length of a valid UUID Key, including hyphens.
+	KeyLength = 31
+
+	// KeyPartLength is the length of each part in a UUID Key.
+	// A UUID Key consists of 4 parts separated by hyphens.
+	KeyPartLength = 7
+
+	// KeyHyphenCount is the number of hyphens in a valid UUID Key.
+	KeyHyphenCount = 3
+
+	// KeyPartsCount is the number of parts in a valid UUID Key.
+	KeyPartsCount = KeyHyphenCount + 1
 )
 
 // Key is a UUID Key string.
@@ -48,7 +57,7 @@ func FromString(key string) (Key, error) {
 //   - 38QARV0-1ET0G6Z-2CJD9VA2ZZAR0X (missing hyphen)
 //   - 38QARV0-1ET0G6-2CJD9VA-2ZZAR0X (part too short)
 func (k Key) Valid() bool {
-	if len(k) != key_len { // check if the key is 31 characters long
+	if len(k) != KeyLength { // check if the key is 31 characters long
 		return false
 	}
 	hyphenCount := 0
@@ -56,8 +65,8 @@ func (k Key) Valid() bool {
 	for _, char := range k {
 		switch {
 		case char == '-':
-			hyphenCount++                // collect the number of hyphens
-			if partLen != key_part_len { // check parts are 7 characters long
+			hyphenCount++                 // collect the number of hyphens
+			if partLen != KeyPartLength { // check parts are 7 characters long
 				return false
 			}
 			partLen = 0 // reset the part length
@@ -70,7 +79,7 @@ func (k Key) Valid() bool {
 		}
 	}
 	// check if the key contains 3 hyphens and the last part is 7 characters long
-	return hyphenCount == key_hyphens && partLen == key_part_len
+	return hyphenCount == KeyHyphenCount && partLen == KeyPartLength
 }
 
 // UUIDString will validate and convert a given Key into a UUID string.

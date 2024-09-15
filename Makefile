@@ -65,14 +65,19 @@ lint: ## Run golangci-lint
 	@echo "Running golangci-lint..."
 	golangci-lint run ./...
 
-##@ Testing & Benchmarking
+##@ Benchmarking, Testing, & Coverage
+
+.PHONY: bench
+bench: ## Run Go benchmarks
+	@echo "Running go benchmarks..."
+	go test ./... -tags=bench -bench=.
 
 .PHONY: test
 test: ## Run Go tests
 	@echo "Running go tests..."
 	go test ./... -tags=test
 
-.PHONY: bench
-bench: ## Run Go benchmarks
-	@echo "Running go benchmarks..."
-	go test ./... -tags=bench -bench=.
+.PHONY: coverage
+coverage: ## Run tests and generate coverage report
+	@echo "Running tests and generating coverage report..."
+	go test -race -coverprofile=coverage.txt -covermode=atomic ./...

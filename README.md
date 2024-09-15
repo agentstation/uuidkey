@@ -102,6 +102,25 @@ Package uuidkey encodes UUIDs to a readable Key format via the Base32\-Crockford
 
 ## Constants
 
+<a name="KeyLength"></a>Key validation constraint constants
+
+```go
+const (
+    // KeyLength is the total length of a valid UUID Key, including hyphens.
+    KeyLength = 31
+
+    // KeyPartLength is the length of each part in a UUID Key.
+    // A UUID Key consists of 4 parts separated by hyphens.
+    KeyPartLength = 7
+
+    // KeyHyphenCount is the number of hyphens in a valid UUID Key.
+    KeyHyphenCount = 3
+
+    // KeyPartsCount is the number of parts in a valid UUID Key.
+    KeyPartsCount = KeyHyphenCount + 1
+)
+```
+
 <a name="UUIDLength"></a>
 
 ```go
@@ -113,7 +132,7 @@ const (
 ```
 
 <a name="Key"></a>
-## type [Key](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L16>)
+## type [Key](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L25>)
 
 Key is a UUID Key string.
 
@@ -131,7 +150,7 @@ func Encode(uuid string) (Key, error)
 Encode will encode a given UUID string into a Key with basic length validation.
 
 <a name="FromString"></a>
-### func [FromString](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L24>)
+### func [FromString](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L33>)
 
 ```go
 func FromString(key string) (Key, error)
@@ -149,7 +168,7 @@ func (k Key) Decode() string
 Decode will decode a given Key into a UUID string without validation.
 
 <a name="Key.String"></a>
-### func \(Key\) [String](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L19>)
+### func \(Key\) [String](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L28>)
 
 ```go
 func (k Key) String() string
@@ -158,7 +177,7 @@ func (k Key) String() string
 String will convert your Key into a string.
 
 <a name="Key.UUIDString"></a>
-### func \(Key\) [UUIDString](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L77>)
+### func \(Key\) [UUIDString](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L86>)
 
 ```go
 func (k Key) UUIDString() (string, error)
@@ -167,7 +186,7 @@ func (k Key) UUIDString() (string, error)
 UUIDString will validate and convert a given Key into a UUID string.
 
 <a name="Key.Valid"></a>
-### func \(Key\) [Valid](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L50>)
+### func \(Key\) [Valid](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L59>)
 
 ```go
 func (k Key) Valid() bool
@@ -224,9 +243,10 @@ Development
   vet                   Run go vet
   lint                  Run golangci-lint
 
-Testing & Benchmarking
-  test                  Run Go tests
+Benchmarking, Testing, & Coverage
   bench                 Run Go benchmarks
+  test                  Run Go tests
+  coverage              Run tests and generate coverage report
 ```
 
 ## Benchmarks
