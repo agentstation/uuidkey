@@ -23,6 +23,7 @@ func TestValid(t *testing.T) {
 		"38QARV0 1ET0G6Z 2CJD9VA 2ZZAR0X",  // Spaces instead of hyphens
 		"38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0!",  // Invalid character
 		"38QARV0-1ET0G6-2CJD9VA-2ZZAR0X",   // Part too short
+		"38QARV0-1ET0G6Z-2CJD9VAA-2ZZAR0",  // Third part too long
 	}
 
 	for _, k := range validKeys {
