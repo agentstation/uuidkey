@@ -22,7 +22,7 @@ func decode(s string) string {
 	return (strings.Repeat("0", padding) + decoded)
 }
 
-// Encode will encode a given UUID string into a Key without validation
+// Encode will encode a given UUID string into a Key without validation.
 func Encode(uuid string) Key {
 	// select the 5 parts of the UUID string
 	s1 := uuid[0:8]   // [d1756360]-5da0-40df-9926-a76abff5601d
@@ -47,7 +47,7 @@ func Encode(uuid string) Key {
 	return Key(e1 + "-" + e2 + "-" + e3 + "-" + e4)
 }
 
-// Decode will decode a given Key into a UUID string without validation
+// Decode will decode a given Key into a UUID string without validation.
 func (k Key) Decode() string {
 	// select the 4 parts of the key string
 	key := string(k) // convert the type from a Key to string

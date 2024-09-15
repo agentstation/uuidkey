@@ -1,3 +1,4 @@
+// Package uuidkey encodes UUIDs to a readable Key format via the Base32-Crockford codec.
 package uuidkey
 
 import (
@@ -11,10 +12,10 @@ const (
 	key_hyphens  = 3
 )
 
-// Key is a UUID Key string
+// Key is a UUID Key string.
 type Key string
 
-// String will convert your Key into a string
+// String will convert your Key into a string.
 func (k Key) String() string {
 	return string(k)
 }
@@ -28,13 +29,24 @@ func FromString(key string) (Key, error) {
 	return Key(key), nil
 }
 
-// Valid will verify a given Key follows the correct format:
-// e.g. 38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X
-// 1. 31 characters long
-// 2. Uppercase
-// 3. Contains only alphanumeric characters
-// 4. Contains 3 hyphens
-// 5. Each part is 7 characters long
+// Valid verifies if a given Key follows the correct format.
+// The format should be:
+//   - 31 characters long
+//   - Uppercase
+//   - Contains only alphanumeric characters
+//   - Contains 3 hyphens
+//   - Each part is 7 characters long
+//
+// Examples of valid keys:
+//   - 38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X
+//   - ABCDEFG-1234567-HIJKLMN-OPQRSTU
+//
+// Examples of invalid keys:
+//   - 38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0  (too short)
+//   - 38qarv0-1ET0G6Z-2CJD9VA-2ZZAR0X (contains lowercase)
+//   - 38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X- (extra hyphen)
+//   - 38QARV0-1ET0G6Z-2CJD9VA2ZZAR0X (missing hyphen)
+//   - 38QARV0-1ET0G6-2CJD9VA-2ZZAR0X (part too short)
 func (k Key) Valid() bool {
 	if len(k) != key_len { // check if the key is 31 characters long
 		return false
@@ -61,7 +73,7 @@ func (k Key) Valid() bool {
 	return hyphenCount == key_hyphens && partLen == key_part_len
 }
 
-// UUIDString will validate and convert a given Key into a UUID string
+// UUIDString will validate and convert a given Key into a UUID string.
 func (k Key) UUIDString() (string, error) {
 	if !k.Valid() {
 		return "", errors.New("invalid UUID key")
