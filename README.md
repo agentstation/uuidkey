@@ -115,7 +115,7 @@ type Key string
 func Encode(uuid string) (Key, error)
 ```
 
-Encode will encode a given UUID string into a Key with basic validation.
+Encode will encode a given UUID string into a Key with basic length validation.
 
 <a name="FromString"></a>
 ### func [FromString](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L24>)

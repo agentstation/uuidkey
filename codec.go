@@ -23,7 +23,7 @@ func decode(s string) string {
 	return (strings.Repeat("0", padding) + decoded)
 }
 
-// Encode will encode a given UUID string into a Key with basic validation.
+// Encode will encode a given UUID string into a Key with basic length validation.
 func Encode(uuid string) (Key, error) {
 	if len(uuid) != 36 { // check the UUID string has the correct length
 		return "", fmt.Errorf("invalid UUID length: expected 36 characters, got %d", len(uuid))
