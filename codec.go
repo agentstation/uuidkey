@@ -1,6 +1,7 @@
 package uuidkey
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -22,8 +23,12 @@ func decode(s string) string {
 	return (strings.Repeat("0", padding) + decoded)
 }
 
-// Encode will encode a given UUID string into a Key without validation.
-func Encode(uuid string) Key {
+// Encode will encode a given UUID string into a Key with basic validation.
+func Encode(uuid string) (Key, error) {
+	if len(uuid) != 36 { // check the UUID string has the correct length
+		return "", fmt.Errorf("invalid UUID length: expected 36 characters, got %d", len(uuid))
+	}
+
 	// select the 5 parts of the UUID string
 	s1 := uuid[0:8]   // [d1756360]-5da0-40df-9926-a76abff5601d
 	s2 := uuid[9:13]  // d1756360-[5da0]-40df-9926-a76abff5601d
@@ -44,7 +49,7 @@ func Encode(uuid string) Key {
 	e4 := encode(n4)
 
 	// build and return key
-	return Key(e1 + "-" + e2 + "-" + e3 + "-" + e4)
+	return Key(e1 + "-" + e2 + "-" + e3 + "-" + e4), nil
 }
 
 // Decode will decode a given Key into a UUID string without validation.

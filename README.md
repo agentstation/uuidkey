@@ -50,7 +50,10 @@ import "github.com/agentstation/uuidkey"
 
 ```go
 uuid := "d1756360-5da0-40df-9926-a76abff5601d"
-key := uuidkey.Encode(uuid)
+key, err := uuidkey.Encode(uuid)
+if err != nil {
+    log.Fatal("Error encoding UUID:", err)
+}
 fmt.Println(key) // Output: 38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X
 ```
 
@@ -60,12 +63,11 @@ fmt.Println(key) // Output: 38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X
 key := "38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X"
 decodedKey, err := uuidkey.FromString(key)
 if err != nil {
-  fmt.Println("Error:", err)
+    log.Fatal("Error:", err)
 }
 uuid, err := decodedKey.UUIDString()
 if err != nil {
-  fmt.Println("Error:", err)
-  return
+    log.Fatal("Error:", err)
 }
 fmt.Println(uuid) // Output: d1756360-5da0-40df-9926-a76abff5601d
 ```
@@ -85,7 +87,7 @@ Package uuidkey encodes UUIDs to a readable Key format via the Base32\-Crockford
 ## Index
 
 - [type Key](<#Key>)
-  - [func Encode\(uuid string\) Key](<#Encode>)
+  - [func Encode\(uuid string\) \(Key, error\)](<#Encode>)
   - [func FromString\(key string\) \(Key, error\)](<#FromString>)
   - [func \(k Key\) Decode\(\) string](<#Key.Decode>)
   - [func \(k Key\) String\(\) string](<#Key.String>)
@@ -103,13 +105,13 @@ type Key string
 ```
 
 <a name="Encode"></a>
-### func [Encode](<https://github.com/agentstation/uuidkey/blob/master/codec.go#L26>)
+### func [Encode](<https://github.com/agentstation/uuidkey/blob/master/codec.go#L27>)
 
 ```go
-func Encode(uuid string) Key
+func Encode(uuid string) (Key, error)
 ```
 
-Encode will encode a given UUID string into a Key without validation.
+Encode will encode a given UUID string into a Key with basic validation.
 
 <a name="FromString"></a>
 ### func [FromString](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L24>)
@@ -121,7 +123,7 @@ func FromString(key string) (Key, error)
 FromString will convert a Key formatted string type into a Key type.
 
 <a name="Key.Decode"></a>
-### func \(Key\) [Decode](<https://github.com/agentstation/uuidkey/blob/master/codec.go#L51>)
+### func \(Key\) [Decode](<https://github.com/agentstation/uuidkey/blob/master/codec.go#L56>)
 
 ```go
 func (k Key) Decode() string

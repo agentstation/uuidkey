@@ -58,11 +58,21 @@ func TestFromString(t *testing.T) {
 
 func TestEncodeDecode(t *testing.T) {
 	uuidStr := "d1756360-5da0-40df-9926-a76abff5601d"
-	key := Encode(uuidStr)
+	key, err := Encode(uuidStr)
+	if err != nil {
+		t.Fatalf("Encode() returned an unexpected error: %v", err)
+	}
 	decodedUUID := key.Decode()
 
 	if decodedUUID != uuidStr {
 		t.Errorf("Encode/Decode roundtrip failed. Got %s, want %s", decodedUUID, uuidStr)
+	}
+
+	// Test invalid UUID length
+	invalidUUID := "invalid-uuid"
+	_, err = Encode(invalidUUID)
+	if err == nil {
+		t.Errorf("Encode() did not return an error for invalid UUID length")
 	}
 }
 
@@ -92,7 +102,11 @@ func TestGoogleUUIDRoundtrip(t *testing.T) {
 		uuidString := originalUUID.String()
 
 		// Encode the UUID to our custom key format
-		key := Encode(uuidString)
+		key, err := Encode(uuidString)
+		if err != nil {
+			t.Errorf("Error encoding UUID %s: %v", uuidString, err)
+			continue
+		}
 
 		// Ensure the key is valid
 		if !key.Valid() {
@@ -131,7 +145,11 @@ func TestGofrsUUIDRoundtrip(t *testing.T) {
 		uuidString := originalUUID.String()
 
 		// Encode the UUID to our custom key format
-		key := Encode(uuidString)
+		key, err := Encode(uuidString)
+		if err != nil {
+			t.Errorf("Error encoding UUID %s: %v", uuidString, err)
+			continue
+		}
 
 		// Ensure the key is valid
 		if !key.Valid() {
