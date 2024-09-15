@@ -158,3 +158,14 @@ func TestGofrsUUIDRoundtrip(t *testing.T) {
 		}
 	}
 }
+
+func TestKeyString(t *testing.T) {
+	key := Key("38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X")
+	expected := "38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X"
+
+	result := key.String()
+
+	if result != expected {
+		t.Errorf("Key.String() returned incorrect value. Got %s, want %s", result, expected)
+	}
+}
