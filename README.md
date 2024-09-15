@@ -46,14 +46,14 @@ To use the `uuidkey` package in your Go code, follow these steps:
 import "github.com/agentstation/uuidkey"
 ```
 
-2. Encode a UUID to a Key:
+2. Encode a UUID string to a Key type:
 
 ```go
 key, _ := uuidkey.Encode("d1756360-5da0-40df-9926-a76abff5601d")
 fmt.Println(key) // Output: 38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X
 ```
 
-3. Decode a Key to a UUID string with Key format validation:
+3. Decode a Key type to a UUID string with Key format validation:
 
 ```go
 key, _ := uuidkey.Parse("38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X")
@@ -64,7 +64,7 @@ if err != nil {
 fmt.Println(uuid) // Output: d1756360-5da0-40df-9926-a76abff5601d
 ```
 
-4. Decode a Key to a UUID string with only basic Key length validation:
+4. Decode a Key type to a UUID string with only basic Key length validation:
 
 ```go
 key, _ := uuidkey.Parse("38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X")
