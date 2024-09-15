@@ -89,7 +89,7 @@ Package uuidkey encodes UUIDs to a readable Key format via the Base32\-Crockford
 
 
 <a name="Key"></a>
-## type Key
+## type [Key](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L16>)
 
 Key is a UUID Key string.
 
@@ -98,7 +98,7 @@ type Key string
 ```
 
 <a name="Encode"></a>
-### func Encode
+### func [Encode](<https://github.com/agentstation/uuidkey/blob/master/codec.go#L26>)
 
 ```go
 func Encode(uuid string) Key
@@ -107,7 +107,7 @@ func Encode(uuid string) Key
 Encode will encode a given UUID string into a Key without validation.
 
 <a name="FromString"></a>
-### func FromString
+### func [FromString](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L24>)
 
 ```go
 func FromString(key string) (Key, error)
@@ -116,7 +116,7 @@ func FromString(key string) (Key, error)
 FromString will convert a Key formatted string type into a Key type.
 
 <a name="Key.Decode"></a>
-### func \(Key\) Decode
+### func \(Key\) [Decode](<https://github.com/agentstation/uuidkey/blob/master/codec.go#L51>)
 
 ```go
 func (k Key) Decode() string
@@ -125,7 +125,7 @@ func (k Key) Decode() string
 Decode will decode a given Key into a UUID string without validation.
 
 <a name="Key.String"></a>
-### func \(Key\) String
+### func \(Key\) [String](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L19>)
 
 ```go
 func (k Key) String() string
@@ -134,7 +134,7 @@ func (k Key) String() string
 String will convert your Key into a string.
 
 <a name="Key.UUIDString"></a>
-### func \(Key\) UUIDString
+### func \(Key\) [UUIDString](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L77>)
 
 ```go
 func (k Key) UUIDString() (string, error)
@@ -143,7 +143,7 @@ func (k Key) UUIDString() (string, error)
 UUIDString will validate and convert a given Key into a UUID string.
 
 <a name="Key.Valid"></a>
-### func \(Key\) Valid
+### func \(Key\) [Valid](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L50>)
 
 ```go
 func (k Key) Valid() bool
