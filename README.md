@@ -90,6 +90,7 @@ Package uuidkey encodes UUIDs to a readable Key format via the Base32\-Crockford
 
 ## Index
 
+- [Constants](<#constants>)
 - [type Key](<#Key>)
   - [func Encode\(uuid string\) \(Key, error\)](<#Encode>)
   - [func FromString\(key string\) \(Key, error\)](<#FromString>)
@@ -98,6 +99,18 @@ Package uuidkey encodes UUIDs to a readable Key format via the Base32\-Crockford
   - [func \(k Key\) UUIDString\(\) \(string, error\)](<#Key.UUIDString>)
   - [func \(k Key\) Valid\(\) bool](<#Key.Valid>)
 
+
+## Constants
+
+<a name="UUIDLength"></a>
+
+```go
+const (
+    // UUIDLength is the standard length of a UUID string, including hyphens.
+    // Reference: RFC 4122 (https://tools.ietf.org/html/rfc4122)
+    UUIDLength = 36
+)
+```
 
 <a name="Key"></a>
 ## type [Key](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L16>)
@@ -109,7 +122,7 @@ type Key string
 ```
 
 <a name="Encode"></a>
-### func [Encode](<https://github.com/agentstation/uuidkey/blob/master/codec.go#L27>)
+### func [Encode](<https://github.com/agentstation/uuidkey/blob/master/codec.go#L33>)
 
 ```go
 func Encode(uuid string) (Key, error)
@@ -127,7 +140,7 @@ func FromString(key string) (Key, error)
 FromString will convert a Key formatted string type into a Key type.
 
 <a name="Key.Decode"></a>
-### func \(Key\) [Decode](<https://github.com/agentstation/uuidkey/blob/master/codec.go#L56>)
+### func \(Key\) [Decode](<https://github.com/agentstation/uuidkey/blob/master/codec.go#L62>)
 
 ```go
 func (k Key) Decode() string

@@ -8,6 +8,12 @@ import (
 	"github.com/richardlehane/crock32"
 )
 
+const (
+	// UUIDLength is the standard length of a UUID string, including hyphens.
+	// Reference: RFC 4122 (https://tools.ietf.org/html/rfc4122)
+	UUIDLength = 36
+)
+
 // encode will convert your given int64 into base32 crockford encoding format
 func encode(n uint64) string {
 	encoded := crock32.Encode(n)
@@ -25,8 +31,8 @@ func decode(s string) string {
 
 // Encode will encode a given UUID string into a Key with basic length validation.
 func Encode(uuid string) (Key, error) {
-	if len(uuid) != 36 { // check the UUID string has the correct length
-		return "", fmt.Errorf("invalid UUID length: expected 36 characters, got %d", len(uuid))
+	if len(uuid) != UUIDLength {
+		return "", fmt.Errorf("invalid UUID length: expected %d characters, got %d", UUIDLength, len(uuid))
 	}
 
 	// select the 5 parts of the UUID string
