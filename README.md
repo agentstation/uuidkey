@@ -93,7 +93,9 @@ Package uuidkey encodes UUIDs to a readable Key format via the Base32\-Crockford
 - [Constants](<#constants>)
 - [type Key](<#Key>)
   - [func Encode\(uuid string\) \(Key, error\)](<#Encode>)
+  - [func EncodeBytes\(uuid \[16\]byte\) \(Key, error\)](<#EncodeBytes>)
   - [func Parse\(key string\) \(Key, error\)](<#Parse>)
+  - [func \(k Key\) Bytes\(\) \(\[16\]byte, error\)](<#Key.Bytes>)
   - [func \(k Key\) Decode\(\) \(string, error\)](<#Key.Decode>)
   - [func \(k Key\) String\(\) string](<#Key.String>)
   - [func \(k Key\) UUID\(\) \(string, error\)](<#Key.UUID>)
@@ -149,6 +151,15 @@ func Encode(uuid string) (Key, error)
 
 Encode will encode a given UUID string into a Key with basic length validation.
 
+<a name="EncodeBytes"></a>
+### func [EncodeBytes](<https://github.com/agentstation/uuidkey/blob/master/codec.go#L62>)
+
+```go
+func EncodeBytes(uuid [16]byte) (Key, error)
+```
+
+EncodeBytes encodes a \[16\]byte UUID into a Key.
+
 <a name="Parse"></a>
 ### func [Parse](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L33>)
 
@@ -158,8 +169,17 @@ func Parse(key string) (Key, error)
 
 Parse converts a Key formatted string into a Key type.
 
+<a name="Key.Bytes"></a>
+### func \(Key\) [Bytes](<https://github.com/agentstation/uuidkey/blob/master/codec.go#L111>)
+
+```go
+func (k Key) Bytes() ([16]byte, error)
+```
+
+Bytes converts a Key to a \[16\]byte UUID.
+
 <a name="Key.Decode"></a>
-### func \(Key\) [Decode](<https://github.com/agentstation/uuidkey/blob/master/codec.go#L62>)
+### func \(Key\) [Decode](<https://github.com/agentstation/uuidkey/blob/master/codec.go#L82>)
 
 ```go
 func (k Key) Decode() (string, error)
