@@ -120,13 +120,7 @@ const (
 
     // KeyPartsCount is the number of parts in a valid UUID Key.
     KeyPartsCount = KeyHyphenCount + 1
-)
-```
 
-<a name="UUIDLength"></a>
-
-```go
-const (
     // UUIDLength is the standard length of a UUID string, including hyphens.
     // Reference: RFC 4122 (https://tools.ietf.org/html/rfc4122)
     UUIDLength = 36
@@ -134,7 +128,7 @@ const (
 ```
 
 <a name="Key"></a>
-## type [Key](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L25>)
+## type [Key](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L34>)
 
 Key is a UUID Key string.
 
@@ -143,7 +137,7 @@ type Key string
 ```
 
 <a name="Encode"></a>
-### func [Encode](<https://github.com/agentstation/uuidkey/blob/master/codec.go#L33>)
+### func [Encode](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L118>)
 
 ```go
 func Encode(uuid string) (Key, error)
@@ -152,7 +146,7 @@ func Encode(uuid string) (Key, error)
 Encode will encode a given UUID string into a Key with basic length validation.
 
 <a name="EncodeBytes"></a>
-### func [EncodeBytes](<https://github.com/agentstation/uuidkey/blob/master/codec.go#L62>)
+### func [EncodeBytes](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L147>)
 
 ```go
 func EncodeBytes(uuid [16]byte) (Key, error)
@@ -161,7 +155,7 @@ func EncodeBytes(uuid [16]byte) (Key, error)
 EncodeBytes encodes a \[16\]byte UUID into a Key.
 
 <a name="Parse"></a>
-### func [Parse](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L33>)
+### func [Parse](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L42>)
 
 ```go
 func Parse(key string) (Key, error)
@@ -170,7 +164,7 @@ func Parse(key string) (Key, error)
 Parse converts a Key formatted string into a Key type.
 
 <a name="Key.Bytes"></a>
-### func \(Key\) [Bytes](<https://github.com/agentstation/uuidkey/blob/master/codec.go#L111>)
+### func \(Key\) [Bytes](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L196>)
 
 ```go
 func (k Key) Bytes() ([16]byte, error)
@@ -179,7 +173,7 @@ func (k Key) Bytes() ([16]byte, error)
 Bytes converts a Key to a \[16\]byte UUID.
 
 <a name="Key.Decode"></a>
-### func \(Key\) [Decode](<https://github.com/agentstation/uuidkey/blob/master/codec.go#L82>)
+### func \(Key\) [Decode](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L167>)
 
 ```go
 func (k Key) Decode() (string, error)
@@ -188,7 +182,7 @@ func (k Key) Decode() (string, error)
 Decode will decode a given Key into a UUID string with basic length validation.
 
 <a name="Key.String"></a>
-### func \(Key\) [String](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L28>)
+### func \(Key\) [String](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L37>)
 
 ```go
 func (k Key) String() string
@@ -197,7 +191,7 @@ func (k Key) String() string
 String will convert your Key into a string.
 
 <a name="Key.UUID"></a>
-### func \(Key\) [UUID](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L86>)
+### func \(Key\) [UUID](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L95>)
 
 ```go
 func (k Key) UUID() (string, error)
@@ -206,7 +200,7 @@ func (k Key) UUID() (string, error)
 UUID will validate and convert a given Key into a UUID string.
 
 <a name="Key.Valid"></a>
-### func \(Key\) [Valid](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L59>)
+### func \(Key\) [Valid](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L68>)
 
 ```go
 func (k Key) Valid() bool
