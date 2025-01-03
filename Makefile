@@ -38,7 +38,7 @@ devbox-update: ## Update Devbox
 devbox: ## Run Devbox shell
 	@devbox shell
 
-##@ Installation
+##@ Install Dependencies
 
 .PHONY: install
 install: ## Download go modules

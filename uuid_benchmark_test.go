@@ -19,7 +19,7 @@ func BenchmarkValidate(b *testing.B) {
 	key := uuidkey.Key(validKey)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = key.Valid()
+		_ = key.IsValid()
 	}
 }
 
@@ -27,7 +27,7 @@ func BenchmarkValidateInvalid(b *testing.B) {
 	key := uuidkey.Key(invalidKey)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = key.Valid()
+		_ = key.IsValid()
 	}
 }
 

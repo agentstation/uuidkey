@@ -32,13 +32,13 @@ func TestValid(t *testing.T) {
 	}
 
 	for _, k := range validKeys {
-		if !k.Valid() {
+		if !k.IsValid() {
 			t.Errorf("Validate() incorrectly reported valid key as invalid: %s", k)
 		}
 	}
 
 	for _, k := range invalidKeys {
-		if k.Valid() {
+		if k.IsValid() {
 			t.Errorf("Validate() incorrectly reported invalid key as valid: %s", k)
 		}
 	}
@@ -117,7 +117,7 @@ func TestGoogleUUIDRoundtrip(t *testing.T) {
 		}
 
 		// Ensure the key is valid
-		if !key.Valid() {
+		if !key.IsValid() {
 			t.Errorf("Generated key is not valid: %s", key)
 			continue
 		}
@@ -160,7 +160,7 @@ func TestGofrsUUIDRoundtrip(t *testing.T) {
 		}
 
 		// Ensure the key is valid
-		if !key.Valid() {
+		if !key.IsValid() {
 			t.Errorf("Generated key is not valid: %s", key)
 			continue
 		}
@@ -253,7 +253,7 @@ func TestEncodeBytesRoundTripGoogle(t *testing.T) {
 		}
 
 		// Ensure the key is valid
-		if !key.Valid() {
+		if !key.IsValid() {
 			t.Errorf("Generated key is not valid: %s", key)
 			continue
 		}
@@ -290,7 +290,7 @@ func TestEncodeBytesRoundTripGofrs(t *testing.T) {
 		}
 
 		// Ensure the key is valid
-		if !key.Valid() {
+		if !key.IsValid() {
 			t.Errorf("Generated key is not valid: %s", key)
 			continue
 		}

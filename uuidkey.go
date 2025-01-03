@@ -41,13 +41,13 @@ func (k Key) String() string {
 // Parse converts a Key formatted string into a Key type.
 func Parse(key string) (Key, error) {
 	k := Key(key)
-	if !k.Valid() {
+	if !k.IsValid() {
 		return "", errors.New("invalid UUID Key")
 	}
 	return k, nil
 }
 
-// Valid verifies if a given Key follows the correct format.
+// IsValid verifies if a given Key follows the correct format.
 // The format should be:
 //   - 31 characters long
 //   - Uppercase
@@ -65,7 +65,7 @@ func Parse(key string) (Key, error) {
 //   - 38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X- (extra hyphen)
 //   - 38QARV0-1ET0G6Z-2CJD9VA2ZZAR0X (missing hyphen)
 //   - 38QARV0-1ET0G6-2CJD9VA-2ZZAR0X (part too short)
-func (k Key) Valid() bool {
+func (k Key) IsValid() bool {
 	if len(k) != KeyLength { // check if the key is 31 characters long
 		return false
 	}
@@ -93,7 +93,7 @@ func (k Key) Valid() bool {
 
 // UUID will validate and convert a given Key into a UUID string.
 func (k Key) UUID() (string, error) {
-	if !k.Valid() {
+	if !k.IsValid() {
 		return "", errors.New("invalid UUID key")
 	}
 	return k.Decode()
