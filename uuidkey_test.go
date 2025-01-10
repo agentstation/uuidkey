@@ -29,6 +29,7 @@ func TestValid(t *testing.T) {
 		"38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0!",  // Invalid character
 		"38QARV0-1ET0G6-2CJD9VA-2ZZAR0X",   // Part too short
 		"38QARV0-1ET0G6Z-2CJD9VAA-2ZZAR0",  // Third part too long
+		"38QARV0-LET0G6Z-2CJD9VA-2ZZAROX",  // Contains non-crockford base32 characters
 	}
 
 	for _, k := range validKeys {

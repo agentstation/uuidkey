@@ -66,27 +66,42 @@ func Parse(key string) (Key, error) {
 //   - 38QARV0-1ET0G6Z-2CJD9VA2ZZAR0X (missing hyphen)
 //   - 38QARV0-1ET0G6-2CJD9VA-2ZZAR0X (part too short)
 func (k Key) IsValid() bool {
-	if len(k) != KeyLength { // check if the key is 31 characters long
+	// check if the key is the correct length
+	if len(k) != KeyLength {
 		return false
 	}
+
 	hyphenCount := 0
 	partLen := 0
+
 	for _, char := range k {
-		switch {
-		case char == '-':
-			hyphenCount++                 // collect the number of hyphens
-			if partLen != KeyPartLength { // check parts are 7 characters long
+		if char == '-' {
+			hyphenCount++ // collect the number of hyphens
+
+			// check parts are 7 characters long
+			if partLen != KeyPartLength {
 				return false
 			}
+
 			partLen = 0 // reset the part length
+
+			continue
+		}
+
 		// check if the key is uppercase
 		// check if the key contains only alphanumeric characters
-		case char < '0' || (char > '9' && char < 'A') || char > 'Z':
+		if char < '0' || (char > '9' && char < 'A') || char > 'Z' {
 			return false
-		default:
-			partLen++
 		}
+
+		// check if the key contains invalid characters (I, L, O, U)
+		if char == 'I' || char == 'L' || char == 'O' || char == 'U' {
+			return false
+		}
+
+		partLen++
 	}
+
 	// check if the key contains 3 hyphens and the last part is 7 characters long
 	return hyphenCount == KeyHyphenCount && partLen == KeyPartLength
 }
