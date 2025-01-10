@@ -17,7 +17,7 @@
 
 The `uuidkey` package encodes UUIDs to a readable `Key` format via the Base32-Crockford codec.
 
-<div align="center"><h3><a href="https://docs.agentstation.ai/blog/beautiful-api-keys/">📚 Read the article on why we made this!</a></h3>
+<div align="center"><h3><a href="https://docs.agentstation.ai/blog/beautiful-api-keys/">📚 Read the article on why we made this!</a></h3></div>
 
 ## UUID Library Compatibility
 
