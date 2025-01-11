@@ -12,8 +12,11 @@ import (
 
 // Key validation constraint constants
 const (
-	// KeyLength is the total length of a valid UUID Key, including hyphens.
-	KeyLength = 31 // 7 + 1 + 7 + 1 + 7 + 1 + 7 = 31 characters
+	// KeyLengthWithHyphens is the total length of a valid UUID Key, including hyphens.
+	KeyLengthWithHyphens = 31 // 7 + 1 + 7 + 1 + 7 + 1 + 7 = 31 characters
+
+	// KeyLengthWithoutHyphens is the total length of a valid UUID Key, excluding hyphens.
+	KeyLengthWithoutHyphens = 28 // 7 + 7 + 7 + 7 = 28 characters
 
 	// KeyPartLength is the length of each part in a UUID Key.
 	// A UUID Key consists of 4 parts separated by hyphens.
@@ -54,28 +57,39 @@ func Parse(key string) (Key, error) {
 //   - Contains only alphanumeric characters
 //   - Contains 3 hyphens
 //   - Each part is 7 characters long
+//   - Each part contains only valid crockford base32 characters (I, L, O, U are not allowed)
 //
 // Examples of valid keys:
 //   - 38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X
-//   - ABCDEFG-1234567-HIJKLMN-OPQRSTU
+//   - ABCDEFG-1234567-HKJKPMN-2PQRST9
 //
 // Examples of invalid keys:
-//   - 38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0  (too short)
-//   - 38qarv0-1ET0G6Z-2CJD9VA-2ZZAR0X (contains lowercase)
+//   - 38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0  	(too short)
+//   - 38qarv0-1ET0G6Z-2CJD9VA-2ZZAR0X 	(contains lowercase)
 //   - 38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X- (extra hyphen)
-//   - 38QARV0-1ET0G6Z-2CJD9VA2ZZAR0X (missing hyphen)
-//   - 38QARV0-1ET0G6-2CJD9VA-2ZZAR0X (part too short)
+//   - 38QARV0-1ET0G6Z-2CJD9VA2ZZAR0X 	(missing hyphen)
+//   - 38QARV0-1ET0G6-2CJD9VA-2ZZAR0X 	(part too short)
+//   - 38QARV0-LET0G6Z-2CJD9VA-2ZZAROX 	(contains non-crockford base32 characters)
 func (k Key) IsValid() bool {
-	// check if the key is the correct length
-	if len(k) != KeyLength {
-		return false
+	// determine if we should expect hyphens given the length of the key
+	hyphens := false
+	length := len(k)
+	if length != KeyLengthWithoutHyphens {
+		if length != KeyLengthWithHyphens {
+			return false // invalid length
+		}
+		hyphens = true
 	}
 
+	// initialize the hyphen count and part length
 	hyphenCount := 0
 	partLen := 0
 
+	// iterate over each character in the key and validate it
 	for _, char := range k {
-		if char == '-' {
+
+		// if we expect hyphens, check if the key contains 3 hyphens and the last part is 7 characters long
+		if hyphens && char == '-' {
 			hyphenCount++ // collect the number of hyphens
 
 			// check parts are 7 characters long
@@ -86,10 +100,11 @@ func (k Key) IsValid() bool {
 			partLen = 0 // reset the part length
 
 			continue
+		} else if !hyphens && char == '-' {
+			return false // we don't expect hyphens, so a hyphen is invalid
 		}
 
-		// check if the key is uppercase
-		// check if the key contains only alphanumeric characters
+		// check if the key contains only uppercase alphanumeric characters
 		if char < '0' || (char > '9' && char < 'A') || char > 'Z' {
 			return false
 		}
@@ -102,8 +117,13 @@ func (k Key) IsValid() bool {
 		partLen++
 	}
 
-	// check if the key contains 3 hyphens and the last part is 7 characters long
-	return hyphenCount == KeyHyphenCount && partLen == KeyPartLength
+	// if we expect hyphens, check if the key contains 3 hyphens and the last part is 7 characters long
+	if hyphens {
+		return hyphenCount == KeyHyphenCount && partLen == KeyPartLength
+	}
+
+	// we've made it this far, so the key is valid
+	return true
 }
 
 // UUID will validate and convert a given Key into a UUID string.
@@ -112,6 +132,33 @@ func (k Key) UUID() (string, error) {
 		return "", errors.New("invalid UUID key")
 	}
 	return k.Decode()
+}
+
+// config is a struct that contains configuration settings
+type config struct {
+	hyphens bool
+}
+
+// defaultConfig is the default configuration for the uuidkey package
+var defaultConfig = config{
+	hyphens: true,
+}
+
+// Option is a function that configures options
+type Option func(c *config)
+
+// apply will apply the options to the default options
+func apply(opts ...Option) config {
+	c := defaultConfig
+	for _, opt := range opts {
+		opt(&c)
+	}
+	return c
+}
+
+// WithoutHyphens expects no hyphens in the Key
+var WithoutHyphens Option = func(c *config) {
+	c.hyphens = false
 }
 
 // encode will convert your given int64 into base32 crockford encoding format
@@ -130,7 +177,10 @@ func decode(s string) string {
 }
 
 // Encode will encode a given UUID string into a Key with basic length validation.
-func Encode(uuid string) (Key, error) {
+func Encode(uuid string, opts ...Option) (Key, error) {
+	// apply the options to the default options
+	options := apply(opts...)
+
 	if len(uuid) != UUIDLength { // basic length validation to ensure we can encode
 		return "", fmt.Errorf("invalid UUID length: expected %d characters, got %d", UUIDLength, len(uuid))
 	}
@@ -155,11 +205,17 @@ func Encode(uuid string) (Key, error) {
 	e4 := encode(n4)
 
 	// build and return key
-	return Key(e1 + "-" + e2 + "-" + e3 + "-" + e4), nil
+	if options.hyphens {
+		return Key(e1 + "-" + e2 + "-" + e3 + "-" + e4), nil
+	}
+	return Key(e1 + e2 + e3 + e4), nil
 }
 
 // EncodeBytes encodes a [16]byte UUID into a Key.
-func EncodeBytes(uuid [16]byte) (Key, error) {
+func EncodeBytes(uuid [16]byte, opts ...Option) (Key, error) {
+	// apply the options to the default options
+	options := apply(opts...)
+
 	// Convert byte groups directly to uint64
 	// Each group of 4 bytes is combined into a single uint64
 	n1 := uint64(uuid[0])<<24 | uint64(uuid[1])<<16 | uint64(uuid[2])<<8 | uint64(uuid[3])
@@ -174,22 +230,40 @@ func EncodeBytes(uuid [16]byte) (Key, error) {
 	e4 := encode(n4) // Encodes bytes 12-15
 
 	// Build and return key
-	// The key is constructed by joining the encoded parts with hyphens
-	return Key(e1 + "-" + e2 + "-" + e3 + "-" + e4), nil
+	if options.hyphens {
+		return Key(e1 + "-" + e2 + "-" + e3 + "-" + e4), nil
+	}
+	return Key(e1 + e2 + e3 + e4), nil
 }
 
 // Decode will decode a given Key into a UUID string with basic length validation.
 func (k Key) Decode() (string, error) {
-	if len(k) != KeyLength { // basic length validation to ensure we can decode
-		return "", fmt.Errorf("invalid Key length: expected %d characters, got %d", KeyLength, len(k))
+	// determine if we should expect hyphens given the length of the key
+	hyphens := false
+	length := len(k)
+	if length != KeyLengthWithoutHyphens {
+		if length != KeyLengthWithHyphens {
+			return "", fmt.Errorf("invalid Key length: expected %d or %d characters, got %d", KeyLengthWithoutHyphens, KeyLengthWithHyphens, length)
+		}
+		hyphens = true
 	}
 
+	// convert the type from a Key to string
+	key := string(k)
+	var s1, s2, s3, s4 string
+
 	// select the 4 parts of the key string
-	key := string(k) // convert the type from a Key to string
-	s1 := key[0:7]   // [38QARV0]-1ET0G6Z-2CJD9VA-2ZZAR0X
-	s2 := key[8:15]  // 38QARV0-[1ET0G6Z]-2CJD9VA-2ZZAR0X
-	s3 := key[16:23] // 38QARV0-1ET0G6Z-[2CJD9VA]-2ZZAR0X
-	s4 := key[24:31] // 38QARV0-1ET0G6Z-2CJD9VA-[2ZZAR0X]
+	if hyphens {
+		s1 = key[0:7]   // [38QARV0]-1ET0G6Z-2CJD9VA-2ZZAR0X
+		s2 = key[8:15]  // 38QARV0-[1ET0G6Z]-2CJD9VA-2ZZAR0X
+		s3 = key[16:23] // 38QARV0-1ET0G6Z-[2CJD9VA]-2ZZAR0X
+		s4 = key[24:31] // 38QARV0-1ET0G6Z-2CJD9VA-[2ZZAR0X]
+	} else {
+		s1 = key[0:7]   // [38QARV0]1ET0G6Z2CJD9VA2ZZAR0X
+		s2 = key[7:14]  // 38QARV0[1ET0G6Z]2CJD9VA2ZZAR0X
+		s3 = key[14:21] // 38QARV01ET0G6Z[2CJD9VA]2ZZAR0X
+		s4 = key[21:28] // 38QARV01ET0G6Z2CJD9VA[2ZZAR0X]
+	}
 
 	// decode each string part into original UUID part string
 	n1 := decode(s1)
@@ -209,19 +283,32 @@ func (k Key) Decode() (string, error) {
 
 // Bytes converts a Key to a [16]byte UUID.
 func (k Key) Bytes() ([16]byte, error) {
+	// convert the type from a Key to string
 	keyStr := string(k)
 
-	// Check the length of the Key
-	if len(keyStr) != KeyLength {
-		return [16]byte{}, fmt.Errorf("invalid Key length: expected %d characters, got %d", KeyLength, len(keyStr))
+	// determine if we should expect hyphens given the length of the key
+	hyphens := false
+	length := len(keyStr)
+	if length != KeyLengthWithoutHyphens {
+		if length != KeyLengthWithHyphens {
+			return [16]byte{}, fmt.Errorf("invalid Key length: expected %d or %d characters, got %d", KeyLengthWithoutHyphens, KeyLengthWithHyphens, length)
+		}
+		hyphens = true
 	}
 
+	// initialize the UUID array
 	var uuid [16]byte
 	var err error
 	var n uint64
 
+	// select the 4 parts of the key string
+	keyParts := [4]string{keyStr[0:7], keyStr[7:14], keyStr[14:21], keyStr[21:28]}
+	if hyphens {
+		keyParts = [4]string{keyStr[0:7], keyStr[8:15], keyStr[16:23], keyStr[24:31]}
+	}
+
 	// Process each part of the key
-	for i, part := range [4]string{keyStr[:7], keyStr[8:15], keyStr[16:23], keyStr[24:]} {
+	for i, part := range keyParts {
 		if n, err = crock32.Decode(strings.ToLower(part)); err != nil {
 			return [16]byte{}, fmt.Errorf("failed to decode Key part: %v", err)
 		}

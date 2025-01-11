@@ -6,6 +6,7 @@ package uuidkey
 import (
 	"bytes"
 	"reflect"
+	"strings"
 	"testing"
 
 	// test-only dependencies
@@ -15,13 +16,20 @@ import (
 
 // test-only dependency
 
+// TestValid tests the IsValid method for both with and without hyphens
 func TestValid(t *testing.T) {
 	validKeys := []Key{
+		// with hyphens
 		"38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X",
 		"0000000-0000000-0000000-0000000",
 		"ZZZZZZZ-ZZZZZZZ-ZZZZZZZ-ZZZZZZZ",
+		// no hyphens
+		"38QARV01ET0G6Z2CJD9VA2ZZAR0X",
+		"0000000000000000000000000000",
+		"ZZZZZZZZZZZZZZZZZZZZZZZZZZZZ",
 	}
 	invalidKeys := []Key{
+		// with hyphens
 		"38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0",   // Too short
 		"38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0XX", // Too long
 		"38qarv0-1ET0G6Z-2CJD9VA-2ZZAR0X",  // Lowercase
@@ -30,6 +38,13 @@ func TestValid(t *testing.T) {
 		"38QARV0-1ET0G6-2CJD9VA-2ZZAR0X",   // Part too short
 		"38QARV0-1ET0G6Z-2CJD9VAA-2ZZAR0",  // Third part too long
 		"38QARV0-LET0G6Z-2CJD9VA-2ZZAROX",  // Contains non-crockford base32 characters
+		// no hyphens
+		"38QARV01ET0G6Z2CJD9VA2ZZAR0",   // Too short
+		"38QARV01ET0G6Z2CJD9VA2ZZAR0XL", // Too long
+		"38qarv01et0g6z2cjd9va2zzar0",   // Lowercase
+		"38QARV01ET0G6Z2CJD9VA2ZZAR0!",  // Invalid character
+		"38QARV01ET0G6Z2CJD9VA2ZZAR0XL", // Too long
+		"38QARV0LET0G6Z2CJD9VA2ZZAR0X",  // Contains non-crockford base32 characters
 	}
 
 	for _, k := range validKeys {
@@ -45,14 +60,24 @@ func TestValid(t *testing.T) {
 	}
 }
 
+// TestParse tests the Parse method for both with and without hyphens
 func TestParse(t *testing.T) {
-	validKey := "38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X"
-	k, err := Parse(validKey)
+	validKeyWithHyphens := "38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X"
+	k, err := Parse(validKeyWithHyphens)
 	if err != nil {
 		t.Errorf("Parse() returned an error for valid key: %v", err)
 	}
-	if k != Key(validKey) {
-		t.Errorf("Parse() returned incorrect key. Got %s, want %s", k, validKey)
+	if k != Key(validKeyWithHyphens) {
+		t.Errorf("Parse() returned incorrect key. Got %s, want %s", k, validKeyWithHyphens)
+	}
+
+	validKeyWithoutHyphens := "38QARV01ET0G6Z2CJD9VA2ZZAR0X"
+	k, err = Parse(validKeyWithoutHyphens)
+	if err != nil {
+		t.Errorf("Parse() returned an error for valid key: %v", err)
+	}
+	if k != Key(validKeyWithoutHyphens) {
+		t.Errorf("Parse() returned incorrect key. Got %s, want %s", k, validKeyWithoutHyphens)
 	}
 
 	invalidKey := "invalid-key"
@@ -62,6 +87,7 @@ func TestParse(t *testing.T) {
 	}
 }
 
+// TestEncodeDecode tests the Encode and Decode methods for both with and without hyphens
 func TestEncodeDecode(t *testing.T) {
 	uuidStr := "d1756360-5da0-40df-9926-a76abff5601d"
 	key, err := Encode(uuidStr)
@@ -77,6 +103,18 @@ func TestEncodeDecode(t *testing.T) {
 		t.Errorf("Encode/Decode roundtrip failed. Got %s, want %s", decodedUUID, uuidStr)
 	}
 
+	key, err = Encode(uuidStr, WithoutHyphens)
+	if err != nil {
+		t.Fatalf("Encode() returned an unexpected error: %v", err)
+	}
+	decodedUUID, err = key.Decode()
+	if err != nil {
+		t.Fatalf("Decode() returned an unexpected error: %v", err)
+	}
+	if decodedUUID != uuidStr {
+		t.Errorf("Encode/Decode roundtrip failed. Got %s, want %s", decodedUUID, uuidStr)
+	}
+
 	// Test invalid UUID length
 	invalidUUID := "invalid-uuid"
 	_, err = Encode(invalidUUID)
@@ -85,11 +123,21 @@ func TestEncodeDecode(t *testing.T) {
 	}
 }
 
+// TestUUIDString tests the UUID method for both with and without hyphens
 func TestUUIDString(t *testing.T) {
-	validKey := Key("38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X")
+	validKeyWithHyphens := Key("38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X")
+	validKeyWithoutHyphens := Key("38QARV01ET0G6Z2CJD9VA2ZZAR0X")
 	expectedUUID := "d1756360-5da0-40df-9926-a76abff5601d"
 
-	uuidStr, err := validKey.UUID()
+	uuidStr, err := validKeyWithHyphens.UUID()
+	if err != nil {
+		t.Errorf("UUID() returned an error for valid key: %v", err)
+	}
+	if uuidStr != expectedUUID {
+		t.Errorf("UUID() returned incorrect UUID string. Got %s, want %s", uuidStr, expectedUUID)
+	}
+
+	uuidStr, err = validKeyWithoutHyphens.UUID()
 	if err != nil {
 		t.Errorf("UUID() returned an error for valid key: %v", err)
 	}
@@ -104,6 +152,7 @@ func TestUUIDString(t *testing.T) {
 	}
 }
 
+// TestGoogleUUIDRoundtrip tests the roundtrip from Google's UUID library to our custom key format and back
 func TestGoogleUUIDRoundtrip(t *testing.T) {
 	for i := 0; i < 1000; i++ { // Test with 1000 random UUIDs
 		// Generate a random UUID using Google's library
@@ -144,6 +193,48 @@ func TestGoogleUUIDRoundtrip(t *testing.T) {
 	}
 }
 
+// TestGoogleUUIDRoundtripWithoutHyphens tests the roundtrip from Google's UUID library to our custom key format and back without hyphens
+func TestGoogleUUIDRoundtripWithoutHyphens(t *testing.T) {
+	for i := 0; i < 1000; i++ { // Test with 1000 random UUIDs
+		// Generate a random UUID using Google's library
+		originalUUID := googleUUID.New()
+		uuidString := originalUUID.String()
+
+		// Encode the UUID to our custom key format
+		key, err := Encode(uuidString, WithoutHyphens)
+		if err != nil {
+			t.Errorf("Error encoding UUID %s: %v", uuidString, err)
+			continue
+		}
+
+		// Ensure the key is valid
+		if !key.IsValid() {
+			t.Errorf("Generated key is not valid: %s", key)
+			continue
+		}
+
+		// Decode the key back to a UUID string
+		decodedUUIDString, err := key.UUID()
+		if err != nil {
+			t.Errorf("Error decoding key %s: %v", key, err)
+			continue
+		}
+
+		// Parse the decoded UUID string back into a UUID object
+		decodedUUID, err := googleUUID.Parse(decodedUUIDString)
+		if err != nil {
+			t.Errorf("Error parsing decoded UUID string %s: %v", decodedUUIDString, err)
+			continue
+		}
+
+		// Compare the original and decoded UUIDs
+		if originalUUID != decodedUUID {
+			t.Errorf("UUID mismatch. Original: %s, Decoded: %s", originalUUID, decodedUUID)
+		}
+	}
+}
+
+// TestGofrsUUIDRoundtrip tests the roundtrip from gofrs/uuid library to our custom key format and back
 func TestGofrsUUIDRoundtrip(t *testing.T) {
 	for i := 0; i < 1000; i++ { // Test with 1000 random UUIDs
 		// Generate a random UUID using gofrs/uuid library
@@ -187,17 +278,71 @@ func TestGofrsUUIDRoundtrip(t *testing.T) {
 	}
 }
 
-func TestKeyString(t *testing.T) {
-	key := Key("38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X")
-	expected := "38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X"
+// TestGofrsUUIDRoundtripWithoutHyphens tests the roundtrip from gofrs/uuid library to our custom key format and back without hyphens
+func TestGofrsUUIDRoundtripWithoutHyphens(t *testing.T) {
+	for i := 0; i < 1000; i++ { // Test with 1000 random UUIDs
+		// Generate a random UUID using gofrs/uuid library
+		originalUUID, err := gofrsUUID.NewV4()
+		if err != nil {
+			t.Fatalf("Failed to generate UUID: %v", err)
+		}
+		uuidString := originalUUID.String()
 
-	result := key.String()
+		// Encode the UUID to our custom key format
+		key, err := Encode(uuidString, WithoutHyphens)
+		if err != nil {
+			t.Errorf("Error encoding UUID %s: %v", uuidString, err)
+			continue
+		}
 
-	if result != expected {
-		t.Errorf("Key.String() returned incorrect value. Got %s, want %s", result, expected)
+		// Ensure the key is valid
+		if !key.IsValid() {
+			t.Errorf("Generated key is not valid: %s", key)
+			continue
+		}
+
+		// Decode the key back to a UUID string
+		decodedUUIDString, err := key.UUID()
+		if err != nil {
+			t.Errorf("Error decoding key %s: %v", key, err)
+			continue
+		}
+
+		// Parse the decoded UUID string back into a UUID object
+		decodedUUID, err := gofrsUUID.FromString(decodedUUIDString)
+		if err != nil {
+			t.Errorf("Error parsing decoded UUID string %s: %v", decodedUUIDString, err)
+			continue
+		}
+
+		// Compare the original and decoded UUIDs
+		if originalUUID != decodedUUID {
+			t.Errorf("UUID mismatch. Original: %s, Decoded: %s", originalUUID, decodedUUID)
+		}
 	}
 }
 
+// TestKeyString tests the String method for both with and without hyphens
+func TestKeyString(t *testing.T) {
+	keyWithHyphens := Key("38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X")
+	keyWithoutHyphens := Key("38QARV01ET0G6Z2CJD9VA2ZZAR0X")
+	expectedWithHyphens := "38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X"
+	expectedWithoutHyphens := "38QARV01ET0G6Z2CJD9VA2ZZAR0X"
+
+	result := keyWithHyphens.String()
+
+	if result != expectedWithHyphens {
+		t.Errorf("Key.String() returned incorrect value. Got %s, want %s", result, expectedWithHyphens)
+	}
+
+	result = keyWithoutHyphens.String()
+
+	if result != expectedWithoutHyphens {
+		t.Errorf("Key.String() returned incorrect value. Got %s, want %s", result, expectedWithoutHyphens)
+	}
+}
+
+// TestEncodeBytes tests the EncodeBytes method for both with and without hyphens
 func TestEncodeBytes(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -206,28 +351,50 @@ func TestEncodeBytes(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "Valid UUID",
+			name:    "Valid UUID with hyphens",
 			input:   [16]byte{0xd1, 0x75, 0x63, 0x60, 0x5d, 0xa0, 0x40, 0xdf, 0x99, 0x26, 0xa7, 0x6a, 0xbf, 0xf5, 0x60, 0x1d},
 			want:    "38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X",
 			wantErr: false,
 		},
 		{
-			name:    "All zeros",
+			name:    "All zeros with hyphens",
 			input:   [16]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 			want:    "0000000-0000000-0000000-0000000",
 			wantErr: false,
 		},
 		{
-			name:    "All ones",
+			name:    "All ones with hyphens",
 			input:   [16]byte{255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255},
 			want:    "3ZZZZZZ-3ZZZZZZ-3ZZZZZZ-3ZZZZZZ",
+			wantErr: false,
+		},
+		{
+			name:    "Valid UUID without hyphens",
+			input:   [16]byte{0xd1, 0x75, 0x63, 0x60, 0x5d, 0xa0, 0x40, 0xdf, 0x99, 0x26, 0xa7, 0x6a, 0xbf, 0xf5, 0x60, 0x1d},
+			want:    "38QARV01ET0G6Z2CJD9VA2ZZAR0X",
+			wantErr: false,
+		},
+		{
+			name:    "All zeros without hyphens",
+			input:   [16]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+			want:    "0000000000000000000000000000",
+			wantErr: false,
+		},
+		{
+			name:    "All ones without hyphens",
+			input:   [16]byte{255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255},
+			want:    "3ZZZZZZ3ZZZZZZ3ZZZZZZ3ZZZZZZ",
 			wantErr: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := EncodeBytes(tt.input)
+			var opts []Option
+			if strings.Contains(tt.name, "without hyphens") {
+				opts = append(opts, WithoutHyphens)
+			}
+			got, err := EncodeBytes(tt.input, opts...)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("EncodeBytes() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -239,6 +406,7 @@ func TestEncodeBytes(t *testing.T) {
 	}
 }
 
+// TestEncodeBytesRoundTripGoogle tests the roundtrip from Google's UUID library to our custom key format and back
 func TestEncodeBytesRoundTripGoogle(t *testing.T) {
 	for i := 0; i < 1000; i++ { // Test with 1000 random UUIDs
 		// Generate a random UUID using Google's library
@@ -273,6 +441,42 @@ func TestEncodeBytesRoundTripGoogle(t *testing.T) {
 	}
 }
 
+// TestEncodeBytesRoundTripGoogleWithoutHyphens tests the roundtrip from Google's UUID library to our custom key format and back without hyphens
+func TestEncodeBytesRoundTripGoogleWithoutHyphens(t *testing.T) {
+	for i := 0; i < 1000; i++ { // Test with 1000 random UUIDs
+		// Generate a random UUID using Google's library
+		originalUUID := googleUUID.New()
+		var uuidBytes [16]byte
+		copy(uuidBytes[:], originalUUID[:])
+
+		// Encode the UUID bytes to our custom key format
+		key, err := EncodeBytes(uuidBytes, WithoutHyphens)
+		if err != nil {
+			t.Errorf("Error encoding UUID bytes %v: %v", uuidBytes, err)
+			continue
+		}
+
+		// Ensure the key is valid
+		if !key.IsValid() {
+			t.Errorf("Generated key is not valid: %s", key)
+			continue
+		}
+
+		// Convert the key back to bytes
+		decodedBytes, err := key.Bytes()
+		if err != nil {
+			t.Errorf("Error converting key %s to bytes: %v", key, err)
+			continue
+		}
+
+		// Compare the original and decoded UUID bytes
+		if !bytes.Equal(uuidBytes[:], decodedBytes[:]) {
+			t.Errorf("UUID bytes mismatch. Original: %v, Decoded: %v", uuidBytes, decodedBytes)
+		}
+	}
+}
+
+// TestEncodeBytesRoundTripGofrs tests the roundtrip from gofrs/uuid library to our custom key format and back
 func TestEncodeBytesRoundTripGofrs(t *testing.T) {
 	for i := 0; i < 1000; i++ { // Test with 1000 random UUIDs
 		// Generate a random UUID using gofrs/uuid library
@@ -310,6 +514,45 @@ func TestEncodeBytesRoundTripGofrs(t *testing.T) {
 	}
 }
 
+// TestEncodeBytesRoundTripGofrsWithoutHyphens tests the roundtrip from gofrs/uuid library to our custom key format and back without hyphens
+func TestEncodeBytesRoundTripGofrsWithoutHyphens(t *testing.T) {
+	for i := 0; i < 1000; i++ { // Test with 1000 random UUIDs
+		// Generate a random UUID using gofrs/uuid library
+		originalUUID, err := gofrsUUID.NewV4()
+		if err != nil {
+			t.Fatalf("Failed to generate UUID: %v", err)
+		}
+		var uuidBytes [16]byte
+		copy(uuidBytes[:], originalUUID[:])
+
+		// Encode the UUID bytes to our custom key format
+		key, err := EncodeBytes(uuidBytes, WithoutHyphens)
+		if err != nil {
+			t.Errorf("Error encoding UUID bytes %v: %v", uuidBytes, err)
+			continue
+		}
+
+		// Ensure the key is valid
+		if !key.IsValid() {
+			t.Errorf("Generated key is not valid: %s", key)
+			continue
+		}
+
+		// Convert the key back to bytes
+		decodedBytes, err := key.Bytes()
+		if err != nil {
+			t.Errorf("Error converting key %s to bytes: %v", key, err)
+			continue
+		}
+
+		// Compare the original and decoded UUID bytes
+		if !bytes.Equal(uuidBytes[:], decodedBytes[:]) {
+			t.Errorf("UUID bytes mismatch. Original: %v, Decoded: %v", uuidBytes, decodedBytes)
+		}
+	}
+}
+
+// TestKeyBytes tests the Bytes method for both with and without hyphens
 func TestKeyBytes(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -318,27 +561,44 @@ func TestKeyBytes(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "Valid Key",
+			name:    "Valid Key with hyphens",
 			key:     "38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X",
 			want:    [16]byte{0xd1, 0x75, 0x63, 0x60, 0x5d, 0xa0, 0x40, 0xdf, 0x99, 0x26, 0xa7, 0x6a, 0xbf, 0xf5, 0x60, 0x1d},
 			wantErr: false,
 		},
 		{
-			name:    "All Zeros",
+			name:    "All Zeros with hyphens",
 			key:     "0000000-0000000-0000000-0000000",
 			want:    [16]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 			wantErr: false,
 		},
 		{
-			name:    "Invalid Key",
-			key:     "INVALID-KEY",
+			name:    "Invalid Key (Too Short) with hyphens",
+			key:     "38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0",
 			want:    [16]byte{},
 			wantErr: true,
 		},
-		// Add this new test case
 		{
-			name:    "Invalid Key (Too Short)",
-			key:     "38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0",
+			name:    "Valid Key without hyphens",
+			key:     "38QARV01ET0G6Z2CJD9VA2ZZAR0X",
+			want:    [16]byte{0xd1, 0x75, 0x63, 0x60, 0x5d, 0xa0, 0x40, 0xdf, 0x99, 0x26, 0xa7, 0x6a, 0xbf, 0xf5, 0x60, 0x1d},
+			wantErr: false,
+		},
+		{
+			name:    "All Zeros without hyphens",
+			key:     "0000000000000000000000000000",
+			want:    [16]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+			wantErr: false,
+		},
+		{
+			name:    "Invalid Key (Too Short) without hyphens",
+			key:     "38QARV01ET0G6Z2CJD9VA2ZZAR0",
+			want:    [16]byte{},
+			wantErr: true,
+		},
+		{
+			name:    "Invalid Key with hyphens",
+			key:     "INVALID-KEY",
 			want:    [16]byte{},
 			wantErr: true,
 		},

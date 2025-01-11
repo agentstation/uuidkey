@@ -94,24 +94,28 @@ Package uuidkey encodes UUIDs to a readable Key format via the Base32\-Crockford
 
 - [Constants](<#constants>)
 - [type Key](<#Key>)
-  - [func Encode\(uuid string\) \(Key, error\)](<#Encode>)
-  - [func EncodeBytes\(uuid \[16\]byte\) \(Key, error\)](<#EncodeBytes>)
+  - [func Encode\(uuid string, opts ...Option\) \(Key, error\)](<#Encode>)
+  - [func EncodeBytes\(uuid \[16\]byte, opts ...Option\) \(Key, error\)](<#EncodeBytes>)
   - [func Parse\(key string\) \(Key, error\)](<#Parse>)
   - [func \(k Key\) Bytes\(\) \(\[16\]byte, error\)](<#Key.Bytes>)
   - [func \(k Key\) Decode\(\) \(string, error\)](<#Key.Decode>)
   - [func \(k Key\) IsValid\(\) bool](<#Key.IsValid>)
   - [func \(k Key\) String\(\) string](<#Key.String>)
   - [func \(k Key\) UUID\(\) \(string, error\)](<#Key.UUID>)
+- [type Option](<#Option>)
 
 
 ## Constants
 
-<a name="KeyLength"></a>Key validation constraint constants
+<a name="KeyLengthWithHyphens"></a>Key validation constraint constants
 
 ```go
 const (
-    // KeyLength is the total length of a valid UUID Key, including hyphens.
-    KeyLength = 31 // 7 + 1 + 7 + 1 + 7 + 1 + 7 = 31 characters
+    // KeyLengthWithHyphens is the total length of a valid UUID Key, including hyphens.
+    KeyLengthWithHyphens = 31 // 7 + 1 + 7 + 1 + 7 + 1 + 7 = 31 characters
+
+    // KeyLengthWithoutHyphens is the total length of a valid UUID Key, excluding hyphens.
+    KeyLengthWithoutHyphens = 28 // 7 + 7 + 7 + 7 = 28 characters
 
     // KeyPartLength is the length of each part in a UUID Key.
     // A UUID Key consists of 4 parts separated by hyphens.
@@ -130,7 +134,7 @@ const (
 ```
 
 <a name="Key"></a>
-## type [Key](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L34>)
+## type [Key](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L37>)
 
 Key is a UUID Key string.
 
@@ -139,25 +143,25 @@ type Key string
 ```
 
 <a name="Encode"></a>
-### func [Encode](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L118>)
+### func [Encode](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L180>)
 
 ```go
-func Encode(uuid string) (Key, error)
+func Encode(uuid string, opts ...Option) (Key, error)
 ```
 
 Encode will encode a given UUID string into a Key with basic length validation.
 
 <a name="EncodeBytes"></a>
-### func [EncodeBytes](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L147>)
+### func [EncodeBytes](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L215>)
 
 ```go
-func EncodeBytes(uuid [16]byte) (Key, error)
+func EncodeBytes(uuid [16]byte, opts ...Option) (Key, error)
 ```
 
 EncodeBytes encodes a \[16\]byte UUID into a Key.
 
 <a name="Parse"></a>
-### func [Parse](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L42>)
+### func [Parse](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L45>)
 
 ```go
 func Parse(key string) (Key, error)
@@ -166,7 +170,7 @@ func Parse(key string) (Key, error)
 Parse converts a Key formatted string into a Key type.
 
 <a name="Key.Bytes"></a>
-### func \(Key\) [Bytes](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L196>)
+### func \(Key\) [Bytes](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L285>)
 
 ```go
 func (k Key) Bytes() ([16]byte, error)
@@ -175,7 +179,7 @@ func (k Key) Bytes() ([16]byte, error)
 Bytes converts a Key to a \[16\]byte UUID.
 
 <a name="Key.Decode"></a>
-### func \(Key\) [Decode](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L167>)
+### func \(Key\) [Decode](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L240>)
 
 ```go
 func (k Key) Decode() (string, error)
@@ -184,7 +188,7 @@ func (k Key) Decode() (string, error)
 Decode will decode a given Key into a UUID string with basic length validation.
 
 <a name="Key.IsValid"></a>
-### func \(Key\) [IsValid](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L68>)
+### func \(Key\) [IsValid](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L73>)
 
 ```go
 func (k Key) IsValid() bool
@@ -197,11 +201,12 @@ IsValid verifies if a given Key follows the correct format. The format should be
 - Contains only alphanumeric characters
 - Contains 3 hyphens
 - Each part is 7 characters long
+- Each part contains only valid crockford base32 characters \(I, L, O, U are not allowed\)
 
 Examples of valid keys:
 
 - 38QARV0\-1ET0G6Z\-2CJD9VA\-2ZZAR0X
-- ABCDEFG\-1234567\-HIJKLMN\-OPQRSTU
+- ABCDEFG\-1234567\-HKJKPMN\-2PQRST9
 
 Examples of invalid keys:
 
@@ -210,9 +215,10 @@ Examples of invalid keys:
 - 38QARV0\-1ET0G6Z\-2CJD9VA\-2ZZAR0X\- \(extra hyphen\)
 - 38QARV0\-1ET0G6Z\-2CJD9VA2ZZAR0X \(missing hyphen\)
 - 38QARV0\-1ET0G6\-2CJD9VA\-2ZZAR0X \(part too short\)
+- 38QARV0\-LET0G6Z\-2CJD9VA\-2ZZAROX \(contains non\-crockford base32 characters\)
 
 <a name="Key.String"></a>
-### func \(Key\) [String](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L37>)
+### func \(Key\) [String](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L40>)
 
 ```go
 func (k Key) String() string
@@ -221,13 +227,30 @@ func (k Key) String() string
 String will convert your Key into a string.
 
 <a name="Key.UUID"></a>
-### func \(Key\) [UUID](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L95>)
+### func \(Key\) [UUID](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L130>)
 
 ```go
 func (k Key) UUID() (string, error)
 ```
 
 UUID will validate and convert a given Key into a UUID string.
+
+<a name="Option"></a>
+## type [Option](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L148>)
+
+Option is a function that configures options
+
+```go
+type Option func(c *config)
+```
+
+<a name="WithoutHyphens"></a>WithoutHyphens expects no hyphens in the Key
+
+```go
+var WithoutHyphens Option = func(c *config) {
+    c.hyphens = false
+}
+```
 
 Generated by [gomarkdoc](<https://github.com/princjef/gomarkdoc>)
 
