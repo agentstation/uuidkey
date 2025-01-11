@@ -45,6 +45,13 @@ func TestValid(t *testing.T) {
 		"38QARV01ET0G6Z2CJD9VA2ZZAR0!",  // Invalid character
 		"38QARV01ET0G6Z2CJD9VA2ZZAR0XL", // Too long
 		"38QARV0LET0G6Z2CJD9VA2ZZAR0X",  // Contains non-crockford base32 characters
+		// Additional hyphen cases
+		"38QARV0-1ET0G6Z2CJD9VA2ZZAR0X", // Only first hyphen
+
+		// Additional non-hyphen cases
+		"38QARV01ET0G6Z-2CJD9VA2ZZAR0X", // Unexpected hyphen in middle
+		"38QARV01ET0G6Z2CJD9VA-2ZZAR0X", // Unexpected hyphen near end
+		"38QARV01ET0G6Z2CJD9VA2ZZAR0X-", // Unexpected hyphen at end
 	}
 
 	for _, k := range validKeys {
