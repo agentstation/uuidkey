@@ -602,6 +602,54 @@ func TestKeyBytes(t *testing.T) {
 			want:    [16]byte{},
 			wantErr: true,
 		},
+		{
+			name:    "Invalid Base32 characters with hyphens",
+			key:     "######-1111111-1111111-1111111", // '#' is invalid in Base32
+			want:    [16]byte{},
+			wantErr: true,
+		},
+		{
+			name:    "Invalid Base32 characters without hyphens",
+			key:     "#######1111111111111111111111",
+			want:    [16]byte{},
+			wantErr: true,
+		},
+		{
+			name:    "Invalid Base32 characters in second group with hyphens",
+			key:     "0000000-#######-1111111-1111111",
+			want:    [16]byte{},
+			wantErr: true,
+		},
+		{
+			name:    "Invalid Base32 characters in third group with hyphens",
+			key:     "0000000-1111111-#######-1111111",
+			want:    [16]byte{},
+			wantErr: true,
+		},
+		{
+			name:    "Invalid Base32 characters in fourth group with hyphens",
+			key:     "0000000-1111111-1111111-#######",
+			want:    [16]byte{},
+			wantErr: true,
+		},
+		{
+			name:    "Invalid Base32 characters in second group without hyphens",
+			key:     "0000000#######1111111111111",
+			want:    [16]byte{},
+			wantErr: true,
+		},
+		{
+			name:    "Invalid Base32 characters in third group without hyphens",
+			key:     "00000001111111#######111111",
+			want:    [16]byte{},
+			wantErr: true,
+		},
+		{
+			name:    "Invalid Base32 characters in fourth group without hyphens",
+			key:     "0000000111111111111111######",
+			want:    [16]byte{},
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {

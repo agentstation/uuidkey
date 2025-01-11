@@ -323,30 +323,31 @@ func (k Key) Bytes() ([16]byte, error) {
 	var err error
 
 	// Avoid string conversion by working directly with the Key type
+	s := string(k)
 	if hyphens {
-		if err = processByteGroup(k[0:7], &uuid, 0); err != nil {
+		if err = processByteGroup(s[0:7], &uuid, 0); err != nil {
 			return [16]byte{}, err
 		}
-		if err = processByteGroup(k[8:15], &uuid, 4); err != nil {
+		if err = processByteGroup(s[8:15], &uuid, 4); err != nil {
 			return [16]byte{}, err
 		}
-		if err = processByteGroup(k[16:23], &uuid, 8); err != nil {
+		if err = processByteGroup(s[16:23], &uuid, 8); err != nil {
 			return [16]byte{}, err
 		}
-		if err = processByteGroup(k[24:31], &uuid, 12); err != nil {
+		if err = processByteGroup(s[24:31], &uuid, 12); err != nil {
 			return [16]byte{}, err
 		}
 	} else {
-		if err = processByteGroup(k[0:7], &uuid, 0); err != nil {
+		if err = processByteGroup(s[0:7], &uuid, 0); err != nil {
 			return [16]byte{}, err
 		}
-		if err = processByteGroup(k[7:14], &uuid, 4); err != nil {
+		if err = processByteGroup(s[7:14], &uuid, 4); err != nil {
 			return [16]byte{}, err
 		}
-		if err = processByteGroup(k[14:21], &uuid, 8); err != nil {
+		if err = processByteGroup(s[14:21], &uuid, 8); err != nil {
 			return [16]byte{}, err
 		}
-		if err = processByteGroup(k[21:28], &uuid, 12); err != nil {
+		if err = processByteGroup(s[21:28], &uuid, 12); err != nil {
 			return [16]byte{}, err
 		}
 	}
@@ -354,8 +355,8 @@ func (k Key) Bytes() ([16]byte, error) {
 	return uuid, nil
 }
 
-func processByteGroup(part Key, uuid *[16]byte, offset int) error {
-	n, err := crock32.Decode(strings.ToLower(string(part)))
+func processByteGroup(part string, uuid *[16]byte, offset int) error {
+	n, err := crock32.Decode(strings.ToLower(part))
 	if err != nil {
 		return fmt.Errorf("failed to decode Key part: %v", err)
 	}
