@@ -51,14 +51,28 @@ import "github.com/agentstation/uuidkey"
 2. Encode a UUID string to a Key type:
 
 ```go
+// With hyphens (default)
 key, _ := uuidkey.Encode("d1756360-5da0-40df-9926-a76abff5601d")
 fmt.Println(key) // Output: 38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X
+
+// Without hyphens
+key, _ := uuidkey.Encode("d1756360-5da0-40df-9926-a76abff5601d", uuidkey.WithoutHyphens)
+fmt.Println(key) // Output: 38QARV01ET0G6Z2CJD9VA2ZZAR0X
 ```
 
 3. Decode a Key type to a UUID string with Key format validation:
 
 ```go
+// With hyphens
 key, _ := uuidkey.Parse("38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X")
+uuid, err := key.UUID()
+if err != nil {
+    log.Fatal("Error:", err)
+}
+fmt.Println(uuid) // Output: d1756360-5da0-40df-9926-a76abff5601d
+
+// Without hyphens
+key, _ := uuidkey.Parse("38QARV01ET0G6Z2CJD9VA2ZZAR0X")
 uuid, err := key.UUID()
 if err != nil {
     log.Fatal("Error:", err)
@@ -75,6 +89,37 @@ if err != nil {
     log.Fatal("Error:", err)
 }
 fmt.Println(uuid) // Output: d1756360-5da0-40df-9926-a76abff5601d
+```
+
+5. Work directly with UUID bytes:
+
+```go
+// Convert UUID string to bytes
+uuidStr := "d1756360-5da0-40df-9926-a76abff5601d"
+uuidBytes, err := hex.DecodeString(strings.ReplaceAll(uuidStr, "-", ""))
+if err != nil {
+    log.Fatal("Error:", err)
+}
+
+// Convert to [16]byte array
+var uuid [16]byte
+copy(uuid[:], uuidBytes)
+
+// Now use the bytes with EncodeBytes (with hyphens)
+key, _ := uuidkey.EncodeBytes(uuid)
+fmt.Println(key) // Output: 38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X
+
+// Without hyphens
+key, _ := uuidkey.EncodeBytes(uuid, uuidkey.WithoutHyphens)
+fmt.Println(key) // Output: 38QARV01ET0G6Z2CJD9VA2ZZAR0X
+
+// Convert Key back to UUID bytes
+key, _ := uuidkey.Parse("38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X")
+bytes, err := key.Bytes()
+if err != nil {
+    log.Fatal("Error:", err)
+}
+fmt.Printf("%x", bytes) // Output: d17563605da040df9926a76abff5601d
 ```
 
 
