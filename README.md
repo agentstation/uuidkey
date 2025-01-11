@@ -332,34 +332,34 @@ go test ./... -tags=bench -bench=.
 goos: darwin
 goarch: arm64
 pkg: github.com/agentstation/uuidkey
-BenchmarkValidate-12                     	40281177	        29.69 ns/op
-BenchmarkValidateInvalid-12              	819883306	         1.496 ns/op
-BenchmarkParse-12                        	38547507	        30.36 ns/op
-BenchmarkParseInvalid-12                 	662246173	         1.798 ns/op
-BenchmarkUUID-12                         	 4692667	       251.8 ns/op
-BenchmarkUUIDInvalid-12                  	66003271	        17.17 ns/op
-BenchmarkEncode-12                       	 7226437	       164.8 ns/op
-BenchmarkDecode-12                       	 5326918	       229.8 ns/op
-BenchmarkBytes-12                        	 5419532	       220.6 ns/op
-BenchmarkEncodeBytes-12                  	12422665	        95.78 ns/op
-BenchmarkValidateWithHyphens-12          	38696102	        30.33 ns/op
-BenchmarkValidateWithoutHyphens-12       	38651440	        29.55 ns/op
-BenchmarkParseWithHyphens-12             	38664464	        29.83 ns/op
-BenchmarkParseWithoutHyphens-12          	38533995	        30.15 ns/op
-BenchmarkEncodeWithHyphens-12            	 6993826	       167.3 ns/op
-BenchmarkEncodeWithoutHyphens-12         	 7191475	       168.0 ns/op
-BenchmarkDecodeWithHyphens-12            	 5343776	       221.3 ns/op
-BenchmarkDecodeWithoutHyphens-12         	 5354410	       222.1 ns/op
-BenchmarkBytesWithHyphens-12             	 5379320	       218.8 ns/op
-BenchmarkBytesWithoutHyphens-12          	 5454608	       218.7 ns/op
-BenchmarkEncodeBytesWithHyphens-12       	12571252	        94.46 ns/op
-BenchmarkEncodeBytesWithoutHyphens-12    	12327489	        96.53 ns/op
-BenchmarkString-12                       	1000000000	         0.2878 ns/op
-BenchmarkValidateInvalidFormat-12        	825361526	         1.444 ns/op
-BenchmarkParseInvalidFormat-12           	659288433	         1.771 ns/op
-BenchmarkDecodeInvalidFormat-12          	10191313	       114.9 ns/op
-BenchmarkEncodeInvalidUUID-12            	10994308	       103.3 ns/op
-BenchmarkBytesInvalidFormat-12           	10311207	       116.2 ns/op
+BenchmarkValidate-12                     	40536168	        29.66 ns/op
+BenchmarkValidateInvalid-12              	820111176	         1.439 ns/op
+BenchmarkParse-12                        	38579367	        29.78 ns/op
+BenchmarkParseInvalid-12                 	668715536	         1.777 ns/op
+BenchmarkUUID-12                         	 4767662	       250.6 ns/op
+BenchmarkUUIDInvalid-12                  	66099007	        17.17 ns/op
+BenchmarkEncode-12                       	 7224882	       162.9 ns/op
+BenchmarkDecode-12                       	 5363344	       220.4 ns/op
+BenchmarkBytes-12                        	 5438636	       217.0 ns/op
+BenchmarkEncodeBytes-12                  	12546094	        94.13 ns/op
+BenchmarkValidateWithHyphens-12          	38416134	        29.51 ns/op
+BenchmarkValidateWithoutHyphens-12       	39153255	        29.23 ns/op
+BenchmarkParseWithHyphens-12             	38402560	        30.19 ns/op
+BenchmarkParseWithoutHyphens-12          	38653306	        29.85 ns/op
+BenchmarkEncodeWithHyphens-12            	 7146574	       164.0 ns/op
+BenchmarkEncodeWithoutHyphens-12         	 7255610	       163.3 ns/op
+BenchmarkDecodeWithHyphens-12            	 5368426	       221.0 ns/op
+BenchmarkDecodeWithoutHyphens-12         	 5370716	       221.0 ns/op
+BenchmarkBytesWithHyphens-12             	 5430710	       220.6 ns/op
+BenchmarkBytesWithoutHyphens-12          	 5032964	       217.1 ns/op
+BenchmarkEncodeBytesWithHyphens-12       	12419739	        92.85 ns/op
+BenchmarkEncodeBytesWithoutHyphens-12    	12544892	        92.87 ns/op
+BenchmarkString-12                       	1000000000	         0.2875 ns/op
+BenchmarkValidateInvalidFormat-12        	824398530	         1.434 ns/op
+BenchmarkParseInvalidFormat-12           	668982553	         1.777 ns/op
+BenchmarkDecodeInvalidFormat-12          	10187534	       114.5 ns/op
+BenchmarkEncodeInvalidUUID-12            	11438924	       102.3 ns/op
+BenchmarkBytesInvalidFormat-12           	10280540	       113.4 ns/op
 PASS
-ok  	github.com/agentstation/uuidkey	36.990s
+ok  	github.com/agentstation/uuidkey	36.679s
 ```
