@@ -131,19 +131,22 @@ var WithoutHyphens Option = func(c *config) {
 	c.hyphens = false
 }
 
-// encode will convert your given int64 into base32 crockford encoding format
-func encode(n uint64) string {
-	encoded := crock32.Encode(n)
-	padding := 7 - len(encoded)
-	return strings.ToUpper((strings.Repeat("0", padding) + encoded))
-}
-
 // decode will convert your given string into original UUID part string
 func decode(s string) string {
 	i, _ := crock32.Decode(s)
+
+	var builder strings.Builder
+	builder.Grow(8) // We know the result will be 8 chars
+
 	decoded := strconv.FormatUint(i, 16)
 	padding := 8 - len(decoded)
-	return (strings.Repeat("0", padding) + decoded)
+
+	for i := 0; i < padding; i++ {
+		builder.WriteByte('0')
+	}
+	builder.WriteString(decoded)
+
+	return builder.String()
 }
 
 // Encode will encode a given UUID string into a Key.
@@ -155,66 +158,98 @@ func Encode(uuid string, opts ...Option) (Key, error) {
 		return "", fmt.Errorf("invalid UUID length: expected %d characters, got %d", UUIDLength, len(uuid))
 	}
 
-	// Pre-allocate a single slice for the result
-	result := make([]byte, KeyLengthWithHyphens)
-
-	// Process parts directly into the result slice
-	// UUID format: 8-4-4-4-12 = xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-	processUUIDPart(uuid[0:8], result[0:7])                 // First 8 chars
-	processUUIDPart(uuid[9:13]+uuid[14:18], result[8:15])   // 4-4 middle section
-	processUUIDPart(uuid[19:23]+uuid[24:28], result[16:23]) // 4-4 middle section
-	processUUIDPart(uuid[28:36], result[24:31])             // Last 12 chars
-
-	// Add hyphens if needed
+	// Pre-allocate a strings.Builder with exact capacity
+	var builder strings.Builder
 	if options.hyphens {
-		result[7] = '-'
-		result[15] = '-'
-		result[23] = '-'
-		return Key(result), nil
+		builder.Grow(KeyLengthWithHyphens)
+	} else {
+		builder.Grow(KeyLengthWithoutHyphens)
 	}
 
-	// Return without hyphens
-	return Key(append(result[:7], append(result[8:15], append(result[16:23], result[24:31]...)...)...)), nil
+	// Process each part
+	processAndWritePart(&builder, uuid[0:8])
+	if options.hyphens {
+		builder.WriteByte('-')
+	}
+	processAndWritePart(&builder, uuid[9:13]+uuid[14:18])
+	if options.hyphens {
+		builder.WriteByte('-')
+	}
+	processAndWritePart(&builder, uuid[19:23]+uuid[24:28])
+	if options.hyphens {
+		builder.WriteByte('-')
+	}
+	processAndWritePart(&builder, uuid[28:36])
+
+	return Key(builder.String()), nil
 }
 
-// processUUIDPart converts a hex UUID part directly to base32 and writes to the destination
-func processUUIDPart(src string, dst []byte) {
+func processAndWritePart(builder *strings.Builder, src string) {
 	n, _ := strconv.ParseUint(src, 16, 64)
 	encoded := crock32.Encode(n)
 	padding := 7 - len(encoded)
 
 	// Write padding zeros
 	for i := 0; i < padding; i++ {
-		dst[i] = '0'
+		builder.WriteByte('0')
 	}
 
-	// Write encoded part
-	copy(dst[padding:], strings.ToUpper(encoded))
+	// Write encoded part in uppercase
+	for i := 0; i < len(encoded); i++ {
+		builder.WriteByte(toUpper(encoded[i]))
+	}
+}
+
+// toUpper converts a single byte to uppercase if it's a lowercase letter
+func toUpper(c byte) byte {
+	if c >= 'a' && c <= 'z' {
+		return c - 32
+	}
+	return c
 }
 
 // EncodeBytes encodes a [16]byte UUID into a Key.
 func EncodeBytes(uuid [16]byte, opts ...Option) (Key, error) {
-	// apply the options to the default options
 	options := apply(opts...)
 
-	// Convert byte groups directly to uint64
-	// Each group of 4 bytes is combined into a single uint64
-	n1 := uint64(uuid[0])<<24 | uint64(uuid[1])<<16 | uint64(uuid[2])<<8 | uint64(uuid[3])
-	n2 := uint64(uuid[4])<<24 | uint64(uuid[5])<<16 | uint64(uuid[6])<<8 | uint64(uuid[7])
-	n3 := uint64(uuid[8])<<24 | uint64(uuid[9])<<16 | uint64(uuid[10])<<8 | uint64(uuid[11])
-	n4 := uint64(uuid[12])<<24 | uint64(uuid[13])<<16 | uint64(uuid[14])<<8 | uint64(uuid[15])
-
-	// Encode each uint64 into base32 crockford encoding format
-	e1 := encode(n1) // Encodes bytes 0-3
-	e2 := encode(n2) // Encodes bytes 4-7
-	e3 := encode(n3) // Encodes bytes 8-11
-	e4 := encode(n4) // Encodes bytes 12-15
-
-	// Build and return key
+	var builder strings.Builder
 	if options.hyphens {
-		return Key(e1 + "-" + e2 + "-" + e3 + "-" + e4), nil
+		builder.Grow(KeyLengthWithHyphens)
+	} else {
+		builder.Grow(KeyLengthWithoutHyphens)
 	}
-	return Key(e1 + e2 + e3 + e4), nil
+
+	// Process each 4-byte group
+	writeEncodedPart(&builder, uint64(uuid[0])<<24|uint64(uuid[1])<<16|uint64(uuid[2])<<8|uint64(uuid[3]))
+	if options.hyphens {
+		builder.WriteByte('-')
+	}
+	writeEncodedPart(&builder, uint64(uuid[4])<<24|uint64(uuid[5])<<16|uint64(uuid[6])<<8|uint64(uuid[7]))
+	if options.hyphens {
+		builder.WriteByte('-')
+	}
+	writeEncodedPart(&builder, uint64(uuid[8])<<24|uint64(uuid[9])<<16|uint64(uuid[10])<<8|uint64(uuid[11]))
+	if options.hyphens {
+		builder.WriteByte('-')
+	}
+	writeEncodedPart(&builder, uint64(uuid[12])<<24|uint64(uuid[13])<<16|uint64(uuid[14])<<8|uint64(uuid[15]))
+
+	return Key(builder.String()), nil
+}
+
+func writeEncodedPart(builder *strings.Builder, n uint64) {
+	encoded := crock32.Encode(n)
+	padding := 7 - len(encoded)
+
+	// Write padding zeros
+	for i := 0; i < padding; i++ {
+		builder.WriteByte('0')
+	}
+
+	// Write encoded part in uppercase
+	for i := 0; i < len(encoded); i++ {
+		builder.WriteByte(toUpper(encoded[i]))
+	}
 }
 
 // Decode will decode a given Key into a UUID string with basic length validation.
@@ -224,26 +259,28 @@ func (k Key) Decode() (string, error) {
 	length := len(k)
 	if length != KeyLengthWithoutHyphens {
 		if length != KeyLengthWithHyphens {
-			return "", fmt.Errorf("invalid Key length: expected %d or %d characters, got %d", KeyLengthWithoutHyphens, KeyLengthWithHyphens, length)
+			return "", fmt.Errorf("invalid Key length: expected %d or %d characters, got %d",
+				KeyLengthWithoutHyphens, KeyLengthWithHyphens, length)
 		}
 		hyphens = true
 	}
 
-	// convert the type from a Key to string
-	key := string(k)
-	var s1, s2, s3, s4 string
+	var builder strings.Builder
+	builder.Grow(UUIDLength) // Pre-allocate exact size needed: 36 bytes
 
 	// select the 4 parts of the key string
+	var s1, s2, s3, s4 string
+	s := string(k)
 	if hyphens {
-		s1 = key[0:7]   // [38QARV0]-1ET0G6Z-2CJD9VA-2ZZAR0X
-		s2 = key[8:15]  // 38QARV0-[1ET0G6Z]-2CJD9VA-2ZZAR0X
-		s3 = key[16:23] // 38QARV0-1ET0G6Z-[2CJD9VA]-2ZZAR0X
-		s4 = key[24:31] // 38QARV0-1ET0G6Z-2CJD9VA-[2ZZAR0X]
+		s1 = s[0:7]   // [38QARV0]-1ET0G6Z-2CJD9VA-2ZZAR0X
+		s2 = s[8:15]  // 38QARV0-[1ET0G6Z]-2CJD9VA-2ZZAR0X
+		s3 = s[16:23] // 38QARV0-1ET0G6Z-[2CJD9VA]-2ZZAR0X
+		s4 = s[24:31] // 38QARV0-1ET0G6Z-2CJD9VA-[2ZZAR0X]
 	} else {
-		s1 = key[0:7]   // [38QARV0]1ET0G6Z2CJD9VA2ZZAR0X
-		s2 = key[7:14]  // 38QARV0[1ET0G6Z]2CJD9VA2ZZAR0X
-		s3 = key[14:21] // 38QARV01ET0G6Z[2CJD9VA]2ZZAR0X
-		s4 = key[21:28] // 38QARV01ET0G6Z2CJD9VA[2ZZAR0X]
+		s1 = s[0:7]   // [38QARV0]1ET0G6Z2CJD9VA2ZZAR0X
+		s2 = s[7:14]  // 38QARV0[1ET0G6Z]2CJD9VA2ZZAR0X
+		s3 = s[14:21] // 38QARV01ET0G6Z[2CJD9VA]2ZZAR0X
+		s4 = s[21:28] // 38QARV01ET0G6Z2CJD9VA[2ZZAR0X]
 	}
 
 	// decode each string part into original UUID part string
@@ -257,9 +294,6 @@ func (k Key) Decode() (string, error) {
 	n2b := n2[4:8]
 	n3a := n3[0:4]
 	n3b := n3[4:8]
-
-	var builder strings.Builder
-	builder.Grow(UUIDLength) // Pre-allocate exact size needed
 
 	// Write parts with proper formatting
 	builder.WriteString(n1)
@@ -278,42 +312,57 @@ func (k Key) Decode() (string, error) {
 
 // Bytes converts a Key to a [16]byte UUID.
 func (k Key) Bytes() ([16]byte, error) {
-	// convert the type from a Key to string
-	keyStr := string(k)
-
-	// determine if we should expect hyphens given the length of the key
-	hyphens := false
-	length := len(keyStr)
-	if length != KeyLengthWithoutHyphens {
-		if length != KeyLengthWithHyphens {
-			return [16]byte{}, fmt.Errorf("invalid Key length: expected %d or %d characters, got %d", KeyLengthWithoutHyphens, KeyLengthWithHyphens, length)
-		}
-		hyphens = true
+	length := len(k)
+	if length != KeyLengthWithoutHyphens && length != KeyLengthWithHyphens {
+		return [16]byte{}, fmt.Errorf("invalid Key length: expected %d or %d characters, got %d",
+			KeyLengthWithoutHyphens, KeyLengthWithHyphens, length)
 	}
 
-	// initialize the UUID array
+	hyphens := length == KeyLengthWithHyphens
 	var uuid [16]byte
 	var err error
-	var n uint64
 
-	// select the 4 parts of the key string
-	keyParts := [4]string{keyStr[0:7], keyStr[7:14], keyStr[14:21], keyStr[21:28]}
+	// Avoid string conversion by working directly with the Key type
 	if hyphens {
-		keyParts = [4]string{keyStr[0:7], keyStr[8:15], keyStr[16:23], keyStr[24:31]}
-	}
-
-	// Process each part of the key
-	for i, part := range keyParts {
-		if n, err = crock32.Decode(strings.ToLower(part)); err != nil {
-			return [16]byte{}, fmt.Errorf("failed to decode Key part: %v", err)
+		if err = processByteGroup(k[0:7], &uuid, 0); err != nil {
+			return [16]byte{}, err
 		}
-
-		// Write 4 bytes for each part
-		uuid[i*4] = byte(n >> 24)
-		uuid[i*4+1] = byte(n >> 16)
-		uuid[i*4+2] = byte(n >> 8)
-		uuid[i*4+3] = byte(n)
+		if err = processByteGroup(k[8:15], &uuid, 4); err != nil {
+			return [16]byte{}, err
+		}
+		if err = processByteGroup(k[16:23], &uuid, 8); err != nil {
+			return [16]byte{}, err
+		}
+		if err = processByteGroup(k[24:31], &uuid, 12); err != nil {
+			return [16]byte{}, err
+		}
+	} else {
+		if err = processByteGroup(k[0:7], &uuid, 0); err != nil {
+			return [16]byte{}, err
+		}
+		if err = processByteGroup(k[7:14], &uuid, 4); err != nil {
+			return [16]byte{}, err
+		}
+		if err = processByteGroup(k[14:21], &uuid, 8); err != nil {
+			return [16]byte{}, err
+		}
+		if err = processByteGroup(k[21:28], &uuid, 12); err != nil {
+			return [16]byte{}, err
+		}
 	}
 
 	return uuid, nil
+}
+
+func processByteGroup(part Key, uuid *[16]byte, offset int) error {
+	n, err := crock32.Decode(strings.ToLower(string(part)))
+	if err != nil {
+		return fmt.Errorf("failed to decode Key part: %v", err)
+	}
+
+	uuid[offset] = byte(n >> 24)
+	uuid[offset+1] = byte(n >> 16)
+	uuid[offset+2] = byte(n >> 8)
+	uuid[offset+3] = byte(n)
+	return nil
 }

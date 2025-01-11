@@ -188,7 +188,7 @@ type Key string
 ```
 
 <a name="Encode"></a>
-### func [Encode](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L151>)
+### func [Encode](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L154>)
 
 ```go
 func Encode(uuid string, opts ...Option) (Key, error)
@@ -197,7 +197,7 @@ func Encode(uuid string, opts ...Option) (Key, error)
 Encode will encode a given UUID string into a Key. It pre\-allocates the exact string capacity needed for better performance.
 
 <a name="EncodeBytes"></a>
-### func [EncodeBytes](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L196>)
+### func [EncodeBytes](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L212>)
 
 ```go
 func EncodeBytes(uuid [16]byte, opts ...Option) (Key, error)
@@ -215,7 +215,7 @@ func Parse(key string) (Key, error)
 Parse converts a Key formatted string into a Key type.
 
 <a name="Key.Bytes"></a>
-### func \(Key\) [Bytes](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L280>)
+### func \(Key\) [Bytes](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L314>)
 
 ```go
 func (k Key) Bytes() ([16]byte, error)
@@ -224,7 +224,7 @@ func (k Key) Bytes() ([16]byte, error)
 Bytes converts a Key to a \[16\]byte UUID.
 
 <a name="Key.Decode"></a>
-### func \(Key\) [Decode](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L221>)
+### func \(Key\) [Decode](<https://github.com/agentstation/uuidkey/blob/master/uuidkey.go#L256>)
 
 ```go
 func (k Key) Decode() (string, error)
@@ -321,28 +321,45 @@ Benchmarking, Testing, & Coverage
 
 ## Benchmarks
 
-> **Note:** These benchmarks were run on an Apple M2 Max CPU with 12 cores (8 performance and 4 efficiency) and 32 GB of memory, running macOS 14.6.1.
+> **Note:** These benchmarks were run on an Apple M2 Max CPU with 12 cores (8 performance and 4 efficiency) and 32 GB of memory, running macOS 14.6.1. The results are not representative of all systems, but should give you a general idea of the performance of the package. I was running other processes on the machine while running the benchmarks.
 
 *Your mileage may vary.*
 
 ```sh
-make bench
+devbox ➜ make bench
 Running go benchmarks...
 go test ./... -tags=bench -bench=.
 goos: darwin
 goarch: arm64
 pkg: github.com/agentstation/uuidkey
-cpu: Apple M2 Max
-BenchmarkValidate-12           	33527211	        35.72 ns/op
-BenchmarkParse-12              	32329798	        36.96 ns/op
-BenchmarkFromKey-12            	 4886846	       250.6 ns/op
-BenchmarkEncode-12             	 3151844	       377.0 ns/op
-BenchmarkDecode-12             	 5587066	       216.7 ns/op
-BenchmarkValidateInvalid-12    	1000000000	         0.2953 ns/op
-BenchmarkParseValid-12         	32424325	        36.89 ns/op
-BenchmarkParseInvalid-12       	70131522	        17.01 ns/op
-BenchmarkUUIDValid-12          	 4693452	       247.2 ns/op
-BenchmarkUUIDInvalid-12        	70141429	        16.92 ns/op
+BenchmarkValidate-12                     	40281177	        29.69 ns/op
+BenchmarkValidateInvalid-12              	819883306	         1.496 ns/op
+BenchmarkParse-12                        	38547507	        30.36 ns/op
+BenchmarkParseInvalid-12                 	662246173	         1.798 ns/op
+BenchmarkUUID-12                         	 4692667	       251.8 ns/op
+BenchmarkUUIDInvalid-12                  	66003271	        17.17 ns/op
+BenchmarkEncode-12                       	 7226437	       164.8 ns/op
+BenchmarkDecode-12                       	 5326918	       229.8 ns/op
+BenchmarkBytes-12                        	 5419532	       220.6 ns/op
+BenchmarkEncodeBytes-12                  	12422665	        95.78 ns/op
+BenchmarkValidateWithHyphens-12          	38696102	        30.33 ns/op
+BenchmarkValidateWithoutHyphens-12       	38651440	        29.55 ns/op
+BenchmarkParseWithHyphens-12             	38664464	        29.83 ns/op
+BenchmarkParseWithoutHyphens-12          	38533995	        30.15 ns/op
+BenchmarkEncodeWithHyphens-12            	 6993826	       167.3 ns/op
+BenchmarkEncodeWithoutHyphens-12         	 7191475	       168.0 ns/op
+BenchmarkDecodeWithHyphens-12            	 5343776	       221.3 ns/op
+BenchmarkDecodeWithoutHyphens-12         	 5354410	       222.1 ns/op
+BenchmarkBytesWithHyphens-12             	 5379320	       218.8 ns/op
+BenchmarkBytesWithoutHyphens-12          	 5454608	       218.7 ns/op
+BenchmarkEncodeBytesWithHyphens-12       	12571252	        94.46 ns/op
+BenchmarkEncodeBytesWithoutHyphens-12    	12327489	        96.53 ns/op
+BenchmarkString-12                       	1000000000	         0.2878 ns/op
+BenchmarkValidateInvalidFormat-12        	825361526	         1.444 ns/op
+BenchmarkParseInvalidFormat-12           	659288433	         1.771 ns/op
+BenchmarkDecodeInvalidFormat-12          	10191313	       114.9 ns/op
+BenchmarkEncodeInvalidUUID-12            	10994308	       103.3 ns/op
+BenchmarkBytesInvalidFormat-12           	10311207	       116.2 ns/op
 PASS
-ok  	github.com/agentstation/uuidkey	13.365s
+ok  	github.com/agentstation/uuidkey	36.990s
 ```
