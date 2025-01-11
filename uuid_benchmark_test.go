@@ -96,3 +96,151 @@ func BenchmarkEncodeBytes(b *testing.B) {
 		_, _ = uuidkey.EncodeBytes(uuid)
 	}
 }
+
+func BenchmarkValidateWithHyphens(b *testing.B) {
+	key := uuidkey.Key(validKey)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = key.IsValid()
+	}
+}
+
+func BenchmarkValidateWithoutHyphens(b *testing.B) {
+	key := uuidkey.Key("38QARV01ET0G6Z2CJD9VA2ZZAR0X")
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = key.IsValid()
+	}
+}
+
+func BenchmarkParseWithHyphens(b *testing.B) {
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = uuidkey.Parse(validKey)
+	}
+}
+
+func BenchmarkParseWithoutHyphens(b *testing.B) {
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = uuidkey.Parse("38QARV01ET0G6Z2CJD9VA2ZZAR0X")
+	}
+}
+
+func BenchmarkEncodeWithHyphens(b *testing.B) {
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = uuidkey.Encode(validUUID)
+	}
+}
+
+func BenchmarkEncodeWithoutHyphens(b *testing.B) {
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = uuidkey.Encode(validUUID, uuidkey.WithoutHyphens)
+	}
+}
+
+func BenchmarkDecodeWithHyphens(b *testing.B) {
+	key := uuidkey.Key(validKey)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = key.Decode()
+	}
+}
+
+func BenchmarkDecodeWithoutHyphens(b *testing.B) {
+	key := uuidkey.Key("38QARV01ET0G6Z2CJD9VA2ZZAR0X")
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = key.Decode()
+	}
+}
+
+func BenchmarkBytesWithHyphens(b *testing.B) {
+	key := uuidkey.Key(validKey)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = key.Bytes()
+	}
+}
+
+func BenchmarkBytesWithoutHyphens(b *testing.B) {
+	key := uuidkey.Key("38QARV01ET0G6Z2CJD9VA2ZZAR0X")
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = key.Bytes()
+	}
+}
+
+func BenchmarkEncodeBytesWithHyphens(b *testing.B) {
+	uuid := [16]byte{
+		0xd1, 0x75, 0x63, 0x60,
+		0x5d, 0xa0, 0x40, 0xdf,
+		0x99, 0x26, 0xa7, 0x6a,
+		0xbf, 0xf5, 0x60, 0x1d,
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = uuidkey.EncodeBytes(uuid)
+	}
+}
+
+func BenchmarkEncodeBytesWithoutHyphens(b *testing.B) {
+	uuid := [16]byte{
+		0xd1, 0x75, 0x63, 0x60,
+		0x5d, 0xa0, 0x40, 0xdf,
+		0x99, 0x26, 0xa7, 0x6a,
+		0xbf, 0xf5, 0x60, 0x1d,
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = uuidkey.EncodeBytes(uuid, uuidkey.WithoutHyphens)
+	}
+}
+
+func BenchmarkString(b *testing.B) {
+	key := uuidkey.Key(validKey)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = key.String()
+	}
+}
+
+func BenchmarkValidateInvalidFormat(b *testing.B) {
+	key := uuidkey.Key("INVALID-FORMAT-KEY")
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = key.IsValid()
+	}
+}
+
+func BenchmarkParseInvalidFormat(b *testing.B) {
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = uuidkey.Parse("INVALID-FORMAT-KEY")
+	}
+}
+
+func BenchmarkDecodeInvalidFormat(b *testing.B) {
+	key := uuidkey.Key("INVALID-FORMAT-KEY")
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = key.Decode()
+	}
+}
+
+func BenchmarkEncodeInvalidUUID(b *testing.B) {
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = uuidkey.Encode("not-a-valid-uuid")
+	}
+}
+
+func BenchmarkBytesInvalidFormat(b *testing.B) {
+	key := uuidkey.Key("INVALID-FORMAT-KEY")
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = key.Bytes()
+	}
+}

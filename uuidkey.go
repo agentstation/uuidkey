@@ -52,77 +52,47 @@ func Parse(key string) (Key, error) {
 
 // IsValid verifies if a given Key follows the correct format.
 // The format should be:
-//   - 31 characters long
+//   - 31 characters long (with hyphens) or 28 characters (without hyphens)
 //   - Uppercase
 //   - Contains only alphanumeric characters
-//   - Contains 3 hyphens
+//   - Contains 3 hyphens (if hyphenated)
 //   - Each part is 7 characters long
 //   - Each part contains only valid crockford base32 characters (I, L, O, U are not allowed)
-//
-// Examples of valid keys:
-//   - 38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X
-//   - ABCDEFG-1234567-HKJKPMN-2PQRST9
-//
-// Examples of invalid keys:
-//   - 38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0  	(too short)
-//   - 38qarv0-1ET0G6Z-2CJD9VA-2ZZAR0X 	(contains lowercase)
-//   - 38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0X- (extra hyphen)
-//   - 38QARV0-1ET0G6Z-2CJD9VA2ZZAR0X 	(missing hyphen)
-//   - 38QARV0-1ET0G6-2CJD9VA-2ZZAR0X 	(part too short)
-//   - 38QARV0-LET0G6Z-2CJD9VA-2ZZAROX 	(contains non-crockford base32 characters)
 func (k Key) IsValid() bool {
-	// determine if we should expect hyphens given the length of the key
-	hyphens := false
 	length := len(k)
-	if length != KeyLengthWithoutHyphens {
-		if length != KeyLengthWithHyphens {
-			return false // invalid length
-		}
-		hyphens = true
-	}
-
-	// initialize the hyphen count and part length
-	hyphenCount := 0
-	partLen := 0
-
-	// iterate over each character in the key and validate it
-	for _, char := range k {
-
-		// if we expect hyphens, check if the key contains 3 hyphens and the last part is 7 characters long
-		if hyphens && char == '-' {
-			hyphenCount++ // collect the number of hyphens
-
-			// check parts are 7 characters long
-			if partLen != KeyPartLength {
-				return false
-			}
-
-			partLen = 0 // reset the part length
-
-			continue
-		} else if !hyphens && char == '-' {
-			return false // we don't expect hyphens, so a hyphen is invalid
-		}
-
-		// check if the key contains only uppercase alphanumeric characters
-		if char < '0' || (char > '9' && char < 'A') || char > 'Z' {
+	if length == KeyLengthWithHyphens {
+		// Check hyphens first (faster than character validation)
+		if k[7] != '-' || k[15] != '-' || k[23] != '-' {
 			return false
 		}
+		// Use direct string indexing instead of slicing
+		return isValidPart(string(k[0:7])) && isValidPart(string(k[8:15])) &&
+			isValidPart(string(k[16:23])) && isValidPart(string(k[24:31]))
+	}
+	if length == KeyLengthWithoutHyphens {
+		// Use direct string indexing instead of slicing
+		return isValidPart(string(k[0:7])) && isValidPart(string(k[7:14])) &&
+			isValidPart(string(k[14:21])) && isValidPart(string(k[21:28]))
+	}
+	return false
+}
 
-		// check if the key contains invalid characters (I, L, O, U)
-		if char == 'I' || char == 'L' || char == 'O' || char == 'U' {
+// isValidPart checks if a 7-character part of the key is valid:
+// - Must be exactly 7 characters
+// - Must be uppercase alphanumeric
+// - Must not contain I, L, O, U (invalid in crockford base32)
+func isValidPart(part string) bool {
+	if len(part) != KeyPartLength {
+		return false
+	}
+	for i := 0; i < KeyPartLength; i++ {
+		c := part[i]
+		// Combine conditions to reduce branching
+		if c > 'Z' || (c < '0' || (c > '9' && c < 'A')) ||
+			c == 'I' || c == 'L' || c == 'O' || c == 'U' {
 			return false
 		}
-
-		partLen++
 	}
-
-	// if we expect hyphens, check if the key contains 3 hyphens and the last part is 7 characters long
-	if hyphens {
-		return hyphenCount == KeyHyphenCount && partLen == KeyPartLength
-	}
-
-	// we've made it this far, so the key is valid
 	return true
 }
 
@@ -176,39 +146,50 @@ func decode(s string) string {
 	return (strings.Repeat("0", padding) + decoded)
 }
 
-// Encode will encode a given UUID string into a Key with basic length validation.
+// Encode will encode a given UUID string into a Key.
+// It pre-allocates the exact string capacity needed for better performance.
 func Encode(uuid string, opts ...Option) (Key, error) {
-	// apply the options to the default options
 	options := apply(opts...)
 
-	if len(uuid) != UUIDLength { // basic length validation to ensure we can encode
+	if len(uuid) != UUIDLength {
 		return "", fmt.Errorf("invalid UUID length: expected %d characters, got %d", UUIDLength, len(uuid))
 	}
 
-	// select the 5 parts of the UUID string
-	s1 := uuid[0:8]   // [d1756360]-5da0-40df-9926-a76abff5601d
-	s2 := uuid[9:13]  // d1756360-[5da0]-40df-9926-a76abff5601d
-	s3 := uuid[14:18] // d1756360-5da0-[40df]-9926-a76abff5601d
-	s4 := uuid[19:23] // d1756360-5da0-40df-[9926]-a76abff5601d
-	s5 := uuid[24:36] // d1756360-5da0-40df-9926-[a76abff5601d]
+	// Pre-allocate a single slice for the result
+	result := make([]byte, KeyLengthWithHyphens)
 
-	// decode each string part into uint64
-	n1, _ := strconv.ParseUint(s1, 16, 32)
-	n2, _ := strconv.ParseUint(s2+s3, 16, 32)     // combine s2 and s3
-	n3, _ := strconv.ParseUint(s4+s5[:4], 16, 32) // combine s4 and the first 4 chars of s5
-	n4, _ := strconv.ParseUint(s5[4:], 16, 32)    // the last 8 chars of s5
+	// Process parts directly into the result slice
+	// UUID format: 8-4-4-4-12 = xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+	processUUIDPart(uuid[0:8], result[0:7])                 // First 8 chars
+	processUUIDPart(uuid[9:13]+uuid[14:18], result[8:15])   // 4-4 middle section
+	processUUIDPart(uuid[19:23]+uuid[24:28], result[16:23]) // 4-4 middle section
+	processUUIDPart(uuid[28:36], result[24:31])             // Last 12 chars
 
-	// encode each uint64 into base32 crockford encoding format
-	e1 := encode(n1)
-	e2 := encode(n2)
-	e3 := encode(n3)
-	e4 := encode(n4)
-
-	// build and return key
+	// Add hyphens if needed
 	if options.hyphens {
-		return Key(e1 + "-" + e2 + "-" + e3 + "-" + e4), nil
+		result[7] = '-'
+		result[15] = '-'
+		result[23] = '-'
+		return Key(result), nil
 	}
-	return Key(e1 + e2 + e3 + e4), nil
+
+	// Return without hyphens
+	return Key(append(result[:7], append(result[8:15], append(result[16:23], result[24:31]...)...)...)), nil
+}
+
+// processUUIDPart converts a hex UUID part directly to base32 and writes to the destination
+func processUUIDPart(src string, dst []byte) {
+	n, _ := strconv.ParseUint(src, 16, 64)
+	encoded := crock32.Encode(n)
+	padding := 7 - len(encoded)
+
+	// Write padding zeros
+	for i := 0; i < padding; i++ {
+		dst[i] = '0'
+	}
+
+	// Write encoded part
+	copy(dst[padding:], strings.ToUpper(encoded))
 }
 
 // EncodeBytes encodes a [16]byte UUID into a Key.
@@ -277,8 +258,22 @@ func (k Key) Decode() (string, error) {
 	n3a := n3[0:4]
 	n3b := n3[4:8]
 
-	// build and return UUID string
-	return (n1 + "-" + n2a + "-" + n2b + "-" + n3a + "-" + n3b + n4), nil
+	var builder strings.Builder
+	builder.Grow(UUIDLength) // Pre-allocate exact size needed
+
+	// Write parts with proper formatting
+	builder.WriteString(n1)
+	builder.WriteByte('-')
+	builder.WriteString(n2a)
+	builder.WriteByte('-')
+	builder.WriteString(n2b)
+	builder.WriteByte('-')
+	builder.WriteString(n3a)
+	builder.WriteByte('-')
+	builder.WriteString(n3b)
+	builder.WriteString(n4)
+
+	return builder.String(), nil
 }
 
 // Bytes converts a Key to a [16]byte UUID.
