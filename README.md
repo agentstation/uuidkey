@@ -23,7 +23,9 @@ The `uuidkey` package encodes UUIDs to a readable `Key` format via the Base32-Cr
 
 The `uuidkey` package generates secure, readable API keys by encoding UUIDs using Base32-Crockford with additional security features.
 
-## Key Format
+You can use the `uuidkey` package to generate API keys for your application using the `NewAPIKey` function (recommended to guarantee at least 128 bits of entropy and follow the GitHub Secret Scanning format) or the `Encode` function (to generate just a `Key` type).
+
+## API Key Format
 
 ```
 AGNTSTNP_38QARV01ET0G6Z2CJD9VA2ZZAR0XJJLSO7WBNWY3F_A1B2C3D8
