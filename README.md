@@ -19,6 +19,8 @@ The `uuidkey` package encodes UUIDs to a readable `Key` format via the Base32-Cr
 
 <div align="center"><h3><a href="https://docs.agentstation.ai/blog/beautiful-api-keys/">📚 Read the original article on why we made this!</a></h3></div>
 
+> **Note:** Thanks to everyone for the feedback and suggestions from the original article, we learned a lot and made improvements to follow the GitHub Secret Scanning format (with checksum) and added additional entropy options to ensure UUIDv7 encoding can be used in a wide variety of use cases. You can still use the `Encode` function to generate a `Key` type without the GitHub prefix format and additional entropy - but we recommend using the `NewAPIKey` function with an 8 character prefix to stay symetrical ;D
+
 ## Overview
 
 The `uuidkey` package generates secure, readable API keys by encoding UUIDs using Base32-Crockford with additional security features.
