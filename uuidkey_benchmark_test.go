@@ -244,3 +244,69 @@ func BenchmarkBytesInvalidFormat(b *testing.B) {
 		_, _ = key.Bytes()
 	}
 }
+
+func BenchmarkNewAPIKey(b *testing.B) {
+	prefix := "TEST"
+	uuid := "d1756360-5da0-40df-9926-a76abff5601d"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = uuidkey.NewAPIKey(prefix, uuid)
+	}
+}
+
+func BenchmarkNewAPIKeyWith128BitEntropy(b *testing.B) {
+	prefix := "TEST"
+	uuid := "d1756360-5da0-40df-9926-a76abff5601d"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = uuidkey.NewAPIKey(prefix, uuid, uuidkey.With128BitEntropy)
+	}
+}
+
+func BenchmarkNewAPIKeyWith256BitEntropy(b *testing.B) {
+	prefix := "TEST"
+	uuid := "d1756360-5da0-40df-9926-a76abff5601d"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = uuidkey.NewAPIKey(prefix, uuid, uuidkey.With256BitEntropy)
+	}
+}
+
+func BenchmarkNewAPIKeyFromBytes(b *testing.B) {
+	prefix := "TEST"
+	uuid := [16]byte{
+		0xd1, 0x75, 0x63, 0x60,
+		0x5d, 0xa0, 0x40, 0xdf,
+		0x99, 0x26, 0xa7, 0x6a,
+		0xbf, 0xf5, 0x60, 0x1d,
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = uuidkey.NewAPIKeyFromBytes(prefix, uuid)
+	}
+}
+
+func BenchmarkAPIKeyString(b *testing.B) {
+	key, _ := uuidkey.NewAPIKey("TEST", "d1756360-5da0-40df-9926-a76abff5601d")
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = key.String()
+	}
+}
+
+func BenchmarkParseAPIKey(b *testing.B) {
+	key, _ := uuidkey.NewAPIKey("TEST", "d1756360-5da0-40df-9926-a76abff5601d")
+	apiKey := key.String()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = uuidkey.ParseAPIKey(apiKey)
+	}
+}
+
+func BenchmarkParseAPIKeyInvalid(b *testing.B) {
+	apiKey := "INVALID_KEY_FORMAT"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = uuidkey.ParseAPIKey(apiKey)
+	}
+}

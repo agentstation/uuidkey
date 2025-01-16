@@ -52,6 +52,17 @@ func TestValid(t *testing.T) {
 		"38QARV01ET0G6Z-2CJD9VA2ZZAR0X", // Unexpected hyphen in middle
 		"38QARV01ET0G6Z2CJD9VA-2ZZAR0X", // Unexpected hyphen near end
 		"38QARV01ET0G6Z2CJD9VA2ZZAR0X-", // Unexpected hyphen at end
+		// Additional length validation cases
+		"38QARV0-1ET0G6-2CJD9VA-2ZZAR0X",   // Second part too short (6 chars)
+		"38QARV0-1ET0G6ZZ-2CJD9VA-2ZZAR0X", // Second part too long (8 chars)
+		"38QAR-1ET0G6Z-2CJD9VA-2ZZAR0X",    // First part too short (5 chars)
+		"38QARV0Z-1ET0G6Z-2CJD9VA-2ZZAR0X", // First part too long (8 chars)
+
+		// Without hyphens length validation
+		"38QAR01ET0G6Z2CJD9VA2ZZAR0X",   // First part too short (5 chars)
+		"38QARV0Z1ET0G6Z2CJD9VA2ZZAR0X", // First part too long (8 chars)
+		"38QARV01ET0G2CJD9VA2ZZAR0X",    // Second part too short (5 chars)
+		"38QARV01ET0G6ZZ2CJD9VA2ZZAR0X", // Second part too long (8 chars)
 	}
 
 	for _, k := range validKeys {
@@ -674,6 +685,95 @@ func TestKeyBytes(t *testing.T) {
 			}
 			if tt.wantErr && err == nil {
 				t.Errorf("Key.Bytes() expected error, got nil")
+			}
+		})
+	}
+}
+
+func TestDecodeErrorMessage(t *testing.T) {
+	tests := []struct {
+		name          string
+		key           Key
+		expectedError string
+	}{
+		{
+			name:          "Too short key",
+			key:           "ABC",
+			expectedError: "invalid Key length: expected 28 or 31 characters, got 3",
+		},
+		{
+			name:          "Too long key",
+			key:           "38QARV0-1ET0G6Z-2CJD9VA-2ZZAR0XX",
+			expectedError: "invalid Key length: expected 28 or 31 characters, got 32",
+		},
+		{
+			name:          "Empty key",
+			key:           "",
+			expectedError: "invalid Key length: expected 28 or 31 characters, got 0",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := tt.key.Decode()
+			if err == nil {
+				t.Error("Expected error, got nil")
+				return
+			}
+			if err.Error() != tt.expectedError {
+				t.Errorf("Expected error message %q, got %q", tt.expectedError, err.Error())
+			}
+		})
+	}
+}
+
+func TestKey_Bytes_Errors(t *testing.T) {
+	tests := []struct {
+		name    string
+		key     Key
+		wantErr string
+	}{
+		{
+			name:    "invalid length - too short",
+			key:     Key("ABC"),
+			wantErr: "invalid Key length: expected 28 or 31 characters, got 3",
+		},
+		{
+			name:    "invalid characters in first group",
+			key:     Key("@#$%^&*-1111111-2222222-3333333"),
+			wantErr: "failed to decode Key part: crock32.Decode: invalid character @",
+		},
+		{
+			name:    "invalid characters in second group",
+			key:     Key("1111111-@#$%^&*-2222222-3333333"),
+			wantErr: "failed to decode Key part: crock32.Decode: invalid character @",
+		},
+		{
+			name:    "invalid characters in third group",
+			key:     Key("1111111-2222222-@#$%^&*-3333333"),
+			wantErr: "failed to decode Key part: crock32.Decode: invalid character @",
+		},
+		{
+			name:    "invalid characters in fourth group",
+			key:     Key("1111111-2222222-3333333-@#$%^&*"),
+			wantErr: "failed to decode Key part: crock32.Decode: invalid character @",
+		},
+		{
+			name:    "invalid characters without hyphens",
+			key:     Key("1111111222222233333333@#$%^&"),
+			wantErr: "failed to decode Key part: crock32.Decode: invalid character @",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := tt.key.Bytes()
+			if err == nil {
+				t.Error("expected error, got nil")
+				return
+			}
+			if err.Error() != tt.wantErr {
+				t.Errorf("expected error %q, got %q", tt.wantErr, err.Error())
 			}
 		})
 	}
