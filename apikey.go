@@ -148,52 +148,73 @@ func (a APIKey) String() string {
 
 // NewAPIKey creates a new APIKey from a string prefix, string UUID, and options.
 func NewAPIKey(prefix, uuid string, opts ...Option) (APIKey, error) {
+	// Check if the prefix is empty
 	if prefix == "" {
 		return APIKey{}, fmt.Errorf("prefix cannot be empty")
 	}
 
+	// Apply options
 	options := apply(opts...)
 
+	// Encode the UUID without hyphens
 	key, err := Encode(uuid, WithoutHyphens)
 	if err != nil {
 		return APIKey{}, err
 	}
 
+	// Generate entropy of the specified size
 	entropy, err := generateEntropy(options.entropySize)
 	if err != nil {
 		return APIKey{}, err
 	}
 
-	return APIKey{
+	// Create the APIKey with the prefix, key, and entropy
+	apiKey := APIKey{
 		Prefix:  prefix,
 		Key:     key,
 		Entropy: entropy,
-	}, nil
+	}
+
+	// Calculate the checksum for the APIKey
+	apiKey.Checksum = apiKey.calculateChecksum()
+
+	return apiKey, nil
 }
 
 // NewAPIKeyFromBytes creates a new APIKey from a string prefix, [16]byte UUID, and options.
 func NewAPIKeyFromBytes(prefix string, uuid [16]byte, opts ...Option) (APIKey, error) {
+	// Apply options
 	options := apply(opts...)
 
+	// Encode the UUID without hyphens
 	key, err := EncodeBytes(uuid, WithoutHyphens)
 	if err != nil {
 		return APIKey{}, err
 	}
 
+	// Generate entropy of the specified size
 	entropy, err := generateEntropy(options.entropySize)
 	if err != nil {
 		return APIKey{}, err
 	}
 
-	return APIKey{
+	// Create the APIKey with the prefix, key, and entropy
+	apiKey := APIKey{
 		Prefix:  prefix,
 		Key:     key,
 		Entropy: entropy,
-	}, nil
+	}
+
+	// Calculate the checksum for the APIKey
+	apiKey.Checksum = apiKey.calculateChecksum()
+
+	// Return the fully constructed APIKey
+	return apiKey, nil
 }
 
 // ParseAPIKey will parse a given APIKey string into an APIKey type.
 func ParseAPIKey(apikey string) (APIKey, error) {
+	// Check if the APIKey is empty
 	if apikey == "" {
 		return APIKey{}, fmt.Errorf("invalid APIKey format: expected 3 parts, got 1")
 	}
@@ -208,12 +229,16 @@ func ParseAPIKey(apikey string) (APIKey, error) {
 	firstSep := strings.IndexByte(apikey, '_')
 	lastSep := strings.LastIndexByte(apikey, '_')
 
+	// Extract the prefix
 	prefix := apikey[:firstSep]
 	if prefix == "" {
 		return APIKey{}, fmt.Errorf("invalid prefix: cannot be empty")
 	}
 
+	// Extract the remainder (Key and Entropy)
 	remainder := apikey[firstSep+1 : lastSep]
+
+	// Extract the checksum
 	checksum := apikey[lastSep+1:]
 
 	// The remainder should contain both the Key and Entropy parts
@@ -224,6 +249,7 @@ func ParseAPIKey(apikey string) (APIKey, error) {
 	// Extract the Key part (first KeyLengthWithoutHyphens characters)
 	keyPart := remainder[:KeyLengthWithoutHyphens]
 
+	// Parse the Key part
 	key, err := Parse(keyPart)
 	if err != nil {
 		return APIKey{}, fmt.Errorf("invalid Key format: %v", err)
@@ -243,6 +269,7 @@ func ParseAPIKey(apikey string) (APIKey, error) {
 		}
 	}
 
+	// Create the APIKey with the prefix, key, entropy, and checksum
 	apiKey := APIKey{
 		Prefix:   prefix,
 		Key:      key,

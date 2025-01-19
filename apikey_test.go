@@ -440,3 +440,42 @@ func TestEntropyCharacterValidation(t *testing.T) {
 		})
 	}
 }
+
+func TestChecksumConsistency(t *testing.T) {
+	// Use a fixed UUID for consistency
+	uuid := [16]byte{
+		0xd1, 0x75, 0x63, 0x60,
+		0x5d, 0xa0, 0x40, 0xdf,
+		0x99, 0x26, 0xa7, 0x6a,
+		0xbf, 0xf5, 0x60, 0x1d,
+	}
+
+	// Create first key
+	key1, err := NewAPIKeyFromBytes("TEST", uuid, With128BitEntropy)
+	if err != nil {
+		t.Fatalf("NewAPIKeyFromBytes() failed: %v", err)
+	}
+
+	// Create second key with same components
+	key2 := APIKey{
+		Prefix:  key1.Prefix,
+		Key:     key1.Key,
+		Entropy: key1.Entropy,
+	}
+	key2.Checksum = key2.calculateChecksum()
+
+	// Verify the checksums match
+	if key1.Checksum != key2.Checksum {
+		t.Errorf("checksums don't match for identical keys: %s != %s", key1.Checksum, key2.Checksum)
+	}
+
+	// Verify checksum is recalculated correctly
+	str := key1.String()
+	parsed, err := ParseAPIKey(str)
+	if err != nil {
+		t.Fatalf("ParseAPIKey() failed: %v", err)
+	}
+	if parsed.Checksum != key1.Checksum {
+		t.Errorf("checksum mismatch after parsing: %s != %s", parsed.Checksum, key1.Checksum)
+	}
+}
