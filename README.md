@@ -31,8 +31,8 @@ You can use the `uuidkey` package to generate API keys for your application usin
 
 ```
 AGNTSTNP_38QARV01ET0G6Z2CJD9VA2ZZAR0XJJLSO7WBNWY3F_A1B2C3D8
-└──────┘ └──────────────────────────┘└───────────┘ └──────┘
- Prefix      Crock32 Encoded UUID       Entropy     Checksum
+└─────┘ └──────────────────────────┘└────────────┘ └──────┘
+Prefix        Key (crock32 UUID)        Entropy      Checksum
 ```
 
 ### Components
@@ -235,7 +235,7 @@ Format:
 
 AGNTSTNP_38QARV01ET0G6Z2CJD9VA2ZZAR0XJJLSO7WBNWY3F_A1B2C3D8
 └─────┘ └──────────────────────────┘└────────────┘ └──────┘
-Prefix     UUID-based identifier       Entropy      Checksum
+Prefix        Key (crock32 UUID)        Entropy      Checksum
 ```
 
 ```go
@@ -257,7 +257,7 @@ func NewAPIKey(prefix, uuid string, opts ...Option) (APIKey, error)
 NewAPIKey creates a new APIKey from a string prefix, string UUID, and options.
 
 <a name="NewAPIKeyFromBytes"></a>
-### func [NewAPIKeyFromBytes](<https://github.com/agentstation/uuidkey/blob/master/apikey.go#L175>)
+### func [NewAPIKeyFromBytes](<https://github.com/agentstation/uuidkey/blob/master/apikey.go#L185>)
 
 ```go
 func NewAPIKeyFromBytes(prefix string, uuid [16]byte, opts ...Option) (APIKey, error)
@@ -266,7 +266,7 @@ func NewAPIKeyFromBytes(prefix string, uuid [16]byte, opts ...Option) (APIKey, e
 NewAPIKeyFromBytes creates a new APIKey from a string prefix, \[16\]byte UUID, and options.
 
 <a name="ParseAPIKey"></a>
-### func [ParseAPIKey](<https://github.com/agentstation/uuidkey/blob/master/apikey.go#L196>)
+### func [ParseAPIKey](<https://github.com/agentstation/uuidkey/blob/master/apikey.go#L216>)
 
 ```go
 func ParseAPIKey(apikey string) (APIKey, error)

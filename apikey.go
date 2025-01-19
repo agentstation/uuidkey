@@ -111,7 +111,7 @@ var With256BitEntropy Option = func(c *config) {
 //
 //	AGNTSTNP_38QARV01ET0G6Z2CJD9VA2ZZAR0XJJLSO7WBNWY3F_A1B2C3D8
 //	└─────┘ └──────────────────────────┘└────────────┘ └──────┘
-//	Prefix     UUID-based identifier       Entropy      Checksum
+//	Prefix        Key (crock32 UUID)        Entropy      Checksum
 type APIKey struct {
 	Prefix   string
 	Key      Key
