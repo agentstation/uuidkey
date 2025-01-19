@@ -37,7 +37,7 @@ Prefix        Key (crock32 UUID)        Entropy      Checksum
 
 ### Components
 1. **Prefix** - Company/application identifier (e.g., "AGNTSTNP")
-2. **UUID Key** - Base32-Crockford encoded UUID
+2. **Key** - Base32-Crockford encoded UUID
 3. **Entropy** - Additional random data (128, 160, or 256 bits)
 4. **Checksum** - CRC32 checksum (8 characters) for validation
 
