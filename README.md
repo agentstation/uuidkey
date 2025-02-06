@@ -27,6 +27,19 @@ The `uuidkey` package generates secure, readable API keys by encoding UUIDs usin
 
 You can use the `uuidkey` package to generate API keys for your application using the `NewAPIKey` function (recommended to guarantee at least 128 bits of entropy and follow the GitHub Secret Scanning format) or the `Encode` function (to generate just a `Key` type).
 
+## Language Implementations
+
+The `uuidkey` package has been implemented in several programming languages:
+
+- **Go** - This repository (official implementation)
+  - Package: [github.com/agentstation/uuidkey](https://pkg.go.dev/github.com/agentstation/uuidkey)
+
+- **Node.js/TypeScript** - By [@tanhv90](https://github.com/tanhv90)
+  - Repository: [github.com/tanhv90/uuidkey](https://github.com/tanhv90/uuidkey)
+  - Package: [npm: uuidkey](https://www.npmjs.com/package/uuidkey)
+
+> Want to add your implementation? Feel free to open a PR to add it to this list!
+
 ## API Key Format
 
 ```
