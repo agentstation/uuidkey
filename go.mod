@@ -1,12 +1,13 @@
 module github.com/agentstation/uuidkey
 
-go 1.22.5
+go 1.23.0
+
+toolchain go1.24.4
 
 require (
 	github.com/gofrs/uuid v4.4.0+incompatible // test dependency
 	github.com/google/uuid v1.6.0 // test dependency
-	github.com/richardlehane/crock32 v1.0.1
-	golang.org/x/crypto v0.32.0
+	golang.org/x/crypto v0.35.0
 )
 
-require golang.org/x/sys v0.29.0 // indirect
+require golang.org/x/sys v0.30.0 // indirect
