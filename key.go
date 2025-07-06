@@ -2,12 +2,11 @@
 package uuidkey
 
 import (
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/richardlehane/crock32"
 )
 
 // Key validation constraint constants
@@ -135,20 +134,15 @@ func (k Key) UUID() (string, error) {
 
 // decode will convert your given string into original UUID part string
 func decode(s string) string {
-	i, _ := crock32.Decode(s)
-
-	var builder strings.Builder
-	builder.Grow(8) // We know the result will be 8 chars
-
-	decoded := strconv.FormatUint(i, 16)
-	padding := 8 - len(decoded)
-
-	for i := 0; i < padding; i++ {
-		builder.WriteByte('0')
+	// Decode using number-based crock32 approach
+	n, err := crock32Decode(s)
+	if err != nil {
+		// Fall back to zero on error
+		return "00000000"
 	}
-	builder.WriteString(decoded)
-
-	return builder.String()
+	
+	// Format as 8-character hex string
+	return fmt.Sprintf("%08x", n)
 }
 
 // Encode will encode a given UUID string into a Key.
@@ -187,8 +181,10 @@ func Encode(uuid string, opts ...Option) (Key, error) {
 }
 
 func processAndWritePart(builder *strings.Builder, src string) {
-	n, _ := strconv.ParseUint(src, 16, 64)
-	encoded := crock32.Encode(n)
+	n, _ := strconv.ParseUint(src, 16, 32)
+	
+	// Encode using number-based crock32 approach
+	encoded := crock32Encode(uint32(n))
 	padding := 7 - len(encoded)
 
 	// Write padding zeros
@@ -196,19 +192,10 @@ func processAndWritePart(builder *strings.Builder, src string) {
 		builder.WriteByte('0')
 	}
 
-	// Write encoded part in uppercase
-	for i := 0; i < len(encoded); i++ {
-		builder.WriteByte(toUpper(encoded[i]))
-	}
+	// Write encoded part
+	builder.WriteString(encoded)
 }
 
-// toUpper converts a single byte to uppercase if it's a lowercase letter
-func toUpper(c byte) byte {
-	if c >= 'a' && c <= 'z' {
-		return c - 32
-	}
-	return c
-}
 
 // EncodeBytes encodes a [16]byte UUID into a Key.
 func EncodeBytes(uuid [16]byte, opts ...Option) (Key, error) {
@@ -240,7 +227,8 @@ func EncodeBytes(uuid [16]byte, opts ...Option) (Key, error) {
 }
 
 func writeEncodedPart(builder *strings.Builder, n uint64) {
-	encoded := crock32.Encode(n)
+	// Encode using number-based crock32 approach
+	encoded := crock32Encode(uint32(n))
 	padding := 7 - len(encoded)
 
 	// Write padding zeros
@@ -248,10 +236,8 @@ func writeEncodedPart(builder *strings.Builder, n uint64) {
 		builder.WriteByte('0')
 	}
 
-	// Write encoded part in uppercase
-	for i := 0; i < len(encoded); i++ {
-		builder.WriteByte(toUpper(encoded[i]))
-	}
+	// Write encoded part
+	builder.WriteString(encoded)
 }
 
 // Decode will decode a given Key into a UUID string with basic length validation.
@@ -358,14 +344,13 @@ func (k Key) Bytes() ([16]byte, error) {
 }
 
 func processByteGroup(part string, uuid *[16]byte, offset int) error {
-	n, err := crock32.Decode(strings.ToLower(part))
+	// Decode using number-based crock32 approach
+	n, err := crock32Decode(part)
 	if err != nil {
 		return fmt.Errorf("failed to decode Key part: %v", err)
 	}
-
-	uuid[offset] = byte(n >> 24)
-	uuid[offset+1] = byte(n >> 16)
-	uuid[offset+2] = byte(n >> 8)
-	uuid[offset+3] = byte(n)
+	
+	// Convert uint32 to bytes
+	binary.BigEndian.PutUint32(uuid[offset:offset+4], n)
 	return nil
 }

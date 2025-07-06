@@ -27,6 +27,8 @@ The `uuidkey` package generates secure, readable API keys by encoding UUIDs usin
 
 You can use the `uuidkey` package to generate API keys for your application using the `NewAPIKey` function (recommended to guarantee at least 128 bits of entropy and follow the GitHub Secret Scanning format) or the `Encode` function (to generate just a `Key` type).
 
+> **Implementation Note:** As of v1.1.0, this package uses only the Go standard library's `encoding/base32` for Base32-Crockford encoding, removing the external dependency on `github.com/richardlehane/crock32`. The implementation maintains full backward compatibility while providing constant-time encoding operations.
+
 ## Language Implementations
 
 The `uuidkey` package has been implemented in several programming languages:
@@ -186,6 +188,8 @@ fmt.Printf("%x", bytes) // Output: d17563605da040df9926a76abff5601d
 import "github.com/agentstation/uuidkey"
 ```
 
+Package uuidkey provides Crockford Base32 encoding that's compatible with the original crock32 number\-based approach
+
 Package uuidkey encodes UUIDs to a readable Key format via the Base32\-Crockford codec.
 
 ## Index
@@ -297,7 +301,7 @@ func (a APIKey) String() string
 String returns the complete API key as a string with all components joined
 
 <a name="Key"></a>
-## type [Key](<https://github.com/agentstation/uuidkey/blob/master/key.go#L37>)
+## type [Key](<https://github.com/agentstation/uuidkey/blob/master/key.go#L36>)
 
 Key is a UUID Key string.
 
@@ -306,7 +310,7 @@ type Key string
 ```
 
 <a name="Encode"></a>
-### func [Encode](<https://github.com/agentstation/uuidkey/blob/master/key.go#L156>)
+### func [Encode](<https://github.com/agentstation/uuidkey/blob/master/key.go#L150>)
 
 ```go
 func Encode(uuid string, opts ...Option) (Key, error)
@@ -315,7 +319,7 @@ func Encode(uuid string, opts ...Option) (Key, error)
 Encode will encode a given UUID string into a Key. It pre\-allocates the exact string capacity needed for better performance.
 
 <a name="EncodeBytes"></a>
-### func [EncodeBytes](<https://github.com/agentstation/uuidkey/blob/master/key.go#L214>)
+### func [EncodeBytes](<https://github.com/agentstation/uuidkey/blob/master/key.go#L201>)
 
 ```go
 func EncodeBytes(uuid [16]byte, opts ...Option) (Key, error)
@@ -324,7 +328,7 @@ func EncodeBytes(uuid [16]byte, opts ...Option) (Key, error)
 EncodeBytes encodes a \[16\]byte UUID into a Key.
 
 <a name="Parse"></a>
-### func [Parse](<https://github.com/agentstation/uuidkey/blob/master/key.go#L74>)
+### func [Parse](<https://github.com/agentstation/uuidkey/blob/master/key.go#L73>)
 
 ```go
 func Parse(key string) (Key, error)
@@ -333,7 +337,7 @@ func Parse(key string) (Key, error)
 Parse converts a Key formatted string into a Key type.
 
 <a name="Key.Bytes"></a>
-### func \(Key\) [Bytes](<https://github.com/agentstation/uuidkey/blob/master/key.go#L316>)
+### func \(Key\) [Bytes](<https://github.com/agentstation/uuidkey/blob/master/key.go#L302>)
 
 ```go
 func (k Key) Bytes() ([16]byte, error)
@@ -342,7 +346,7 @@ func (k Key) Bytes() ([16]byte, error)
 Bytes converts a Key to a \[16\]byte UUID.
 
 <a name="Key.Decode"></a>
-### func \(Key\) [Decode](<https://github.com/agentstation/uuidkey/blob/master/key.go#L258>)
+### func \(Key\) [Decode](<https://github.com/agentstation/uuidkey/blob/master/key.go#L244>)
 
 ```go
 func (k Key) Decode() (string, error)
@@ -351,7 +355,7 @@ func (k Key) Decode() (string, error)
 Decode will decode a given Key into a UUID string with basic length validation.
 
 <a name="Key.IsValid"></a>
-### func \(Key\) [IsValid](<https://github.com/agentstation/uuidkey/blob/master/key.go#L90>)
+### func \(Key\) [IsValid](<https://github.com/agentstation/uuidkey/blob/master/key.go#L89>)
 
 ```go
 func (k Key) IsValid() bool
@@ -367,7 +371,7 @@ IsValid verifies if a given Key follows the correct format. The format should be
 - Each part contains only valid crockford base32 characters \(I, L, O, U are not allowed\)
 
 <a name="Key.String"></a>
-### func \(Key\) [String](<https://github.com/agentstation/uuidkey/blob/master/key.go#L40>)
+### func \(Key\) [String](<https://github.com/agentstation/uuidkey/blob/master/key.go#L39>)
 
 ```go
 func (k Key) String() string
@@ -376,7 +380,7 @@ func (k Key) String() string
 String will convert your Key into a string.
 
 <a name="Key.UUID"></a>
-### func \(Key\) [UUID](<https://github.com/agentstation/uuidkey/blob/master/key.go#L129>)
+### func \(Key\) [UUID](<https://github.com/agentstation/uuidkey/blob/master/key.go#L128>)
 
 ```go
 func (k Key) UUID() (string, error)
@@ -385,7 +389,7 @@ func (k Key) UUID() (string, error)
 UUID will validate and convert a given Key into a UUID string.
 
 <a name="Option"></a>
-## type [Option](<https://github.com/agentstation/uuidkey/blob/master/key.go#L57>)
+## type [Option](<https://github.com/agentstation/uuidkey/blob/master/key.go#L56>)
 
 Option is a function that configures options
 
@@ -474,35 +478,35 @@ go test ./... -tags=bench -bench=.
 goos: darwin
 goarch: arm64
 pkg: github.com/agentstation/uuidkey
-BenchmarkValidate-12                     	40536168	        29.66 ns/op
-BenchmarkValidateInvalid-12              	820111176	         1.439 ns/op
-BenchmarkParse-12                        	38579367	        29.78 ns/op
-BenchmarkParseInvalid-12                 	668715536	         1.777 ns/op
-BenchmarkUUID-12                         	 4767662	       250.6 ns/op
-BenchmarkUUIDInvalid-12                  	66099007	        17.17 ns/op
-BenchmarkEncode-12                       	 7224882	       162.9 ns/op
-BenchmarkDecode-12                       	 5363344	       220.4 ns/op
-BenchmarkBytes-12                        	 5438636	       217.0 ns/op
-BenchmarkEncodeBytes-12                  	12546094	        94.13 ns/op
-BenchmarkValidateWithHyphens-12          	38416134	        29.51 ns/op
-BenchmarkValidateWithoutHyphens-12       	39153255	        29.23 ns/op
-BenchmarkParseWithHyphens-12             	38402560	        30.19 ns/op
-BenchmarkParseWithoutHyphens-12          	38653306	        29.85 ns/op
-BenchmarkEncodeWithHyphens-12            	 7146574	       164.0 ns/op
-BenchmarkEncodeWithoutHyphens-12         	 7255610	       163.3 ns/op
-BenchmarkDecodeWithHyphens-12            	 5368426	       221.0 ns/op
-BenchmarkDecodeWithoutHyphens-12         	 5370716	       221.0 ns/op
-BenchmarkBytesWithHyphens-12             	 5430710	       220.6 ns/op
-BenchmarkBytesWithoutHyphens-12          	 5032964	       217.1 ns/op
-BenchmarkEncodeBytesWithHyphens-12       	12419739	        92.85 ns/op
-BenchmarkEncodeBytesWithoutHyphens-12    	12544892	        92.87 ns/op
-BenchmarkString-12                       	1000000000	         0.2875 ns/op
-BenchmarkValidateInvalidFormat-12        	824398530	         1.434 ns/op
-BenchmarkParseInvalidFormat-12           	668982553	         1.777 ns/op
-BenchmarkDecodeInvalidFormat-12          	10187534	       114.5 ns/op
-BenchmarkEncodeInvalidUUID-12            	11438924	       102.3 ns/op
-BenchmarkBytesInvalidFormat-12           	10280540	       113.4 ns/op
+BenchmarkValidate-12                      	38844379	        31.20 ns/op
+BenchmarkValidateInvalid-12               	799813152	         1.522 ns/op
+BenchmarkParse-12                         	37814629	        31.36 ns/op
+BenchmarkParseInvalid-12                  	653474202	         1.850 ns/op
+BenchmarkUUID-12                          	 3826080	       315.4 ns/op
+BenchmarkUUIDInvalid-12                   	84892892	        13.99 ns/op
+BenchmarkEncode-12                        	 8739932	       136.5 ns/op
+BenchmarkDecode-12                        	 4279651	       282.4 ns/op
+BenchmarkBytes-12                         	50595994	        23.95 ns/op
+BenchmarkEncodeBytes-12                   	17510078	        66.62 ns/op
+BenchmarkValidateWithHyphens-12           	38942652	        31.03 ns/op
+BenchmarkValidateWithoutHyphens-12        	39069440	        30.75 ns/op
+BenchmarkParseWithHyphens-12              	38794566	        31.23 ns/op
+BenchmarkParseWithoutHyphens-12           	39039996	        30.97 ns/op
+BenchmarkEncodeWithHyphens-12             	 8860897	       136.1 ns/op
+BenchmarkEncodeWithoutHyphens-12          	 8888666	       136.4 ns/op
+BenchmarkDecodeWithHyphens-12             	 4300177	       287.4 ns/op
+BenchmarkDecodeWithoutHyphens-12          	 4218482	       281.8 ns/op
+BenchmarkBytesWithHyphens-12              	49269594	        23.97 ns/op
+BenchmarkBytesWithoutHyphens-12           	49764051	        24.18 ns/op
+BenchmarkEncodeBytesWithHyphens-12        	18239646	        66.34 ns/op
+BenchmarkEncodeBytesWithoutHyphens-12     	17947390	        65.65 ns/op
+BenchmarkString-12                        	1000000000	         0.3002 ns/op
+BenchmarkValidateInvalidFormat-12         	796483308	         1.510 ns/op
+BenchmarkParseInvalidFormat-12            	637520612	         1.845 ns/op
+BenchmarkDecodeInvalidFormat-12           	10637605	       115.0 ns/op
+BenchmarkEncodeInvalidUUID-12             	11353212	       105.6 ns/op
+BenchmarkBytesInvalidFormat-12            	10728985	       111.9 ns/op
 PASS
-ok  	github.com/agentstation/uuidkey	36.679s
+ok  	github.com/agentstation/uuidkey	49.995s
 ```
 

@@ -778,3 +778,177 @@ func TestKey_Bytes_Errors(t *testing.T) {
 		})
 	}
 }
+
+// TestIsValidPartEdgeCases tests edge cases for isValidPart to improve coverage
+func TestIsValidPartEdgeCases(t *testing.T) {
+	tests := []struct {
+		name  string
+		part  string
+		valid bool
+	}{
+		// Characters just outside valid ranges
+		{"char before 0", "//////1", false}, // '/' is just before '0'
+		{"char after Z", "ABCDE[F", false},  // '[' is just after 'Z'
+		{"char between 9 and A", "12345:6", false}, // ':' is between '9' and 'A'
+		
+		// Invalid Crockford characters
+		{"contains I", "ABCDIEF", false},
+		{"contains L", "ABCDLEF", false},
+		{"contains O", "ABCDOEF", false},
+		{"contains U", "ABCDUEF", false},
+		
+		// Valid edge cases
+		{"all zeros", "0000000", true},
+		{"all nines", "9999999", true},
+		{"all As", "AAAAAAA", true},
+		{"all Zs", "ZZZZZZZ", true},
+		{"mixed valid", "0A9Z1B8", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := isValidPart(tt.part)
+			if result != tt.valid {
+				t.Errorf("isValidPart(%s) = %v, want %v", tt.part, result, tt.valid)
+			}
+		})
+	}
+}
+
+// TestBytesErrorHandling tests error paths in the Bytes function for coverage
+func TestBytesErrorHandling(t *testing.T) {
+	// Create keys that will cause processByteGroup to fail
+	tests := []struct {
+		name    string
+		key     Key
+		wantErr bool
+	}{
+		{
+			// This key has valid length but contains characters that will fail in processByteGroup
+			name:    "invalid characters in first group with hyphens",
+			key:     Key("!!!!!!!-1ET0G6Z-2CJD9VA-2ZZAR0X"),
+			wantErr: true,
+		},
+		{
+			name:    "invalid characters in second group with hyphens",
+			key:     Key("38QARV0-!!!!!!!-2CJD9VA-2ZZAR0X"),
+			wantErr: true,
+		},
+		{
+			name:    "invalid characters in third group with hyphens",
+			key:     Key("38QARV0-1ET0G6Z-!!!!!!!-2ZZAR0X"),
+			wantErr: true,
+		},
+		{
+			name:    "invalid characters in fourth group with hyphens",
+			key:     Key("38QARV0-1ET0G6Z-2CJD9VA-!!!!!!!"),
+			wantErr: true,
+		},
+		{
+			// Without hyphens
+			name:    "invalid characters in first group no hyphens",
+			key:     Key("!!!!!!!1ET0G6Z2CJD9VA2ZZAR0X"),
+			wantErr: true,
+		},
+		{
+			name:    "invalid characters in second group no hyphens",
+			key:     Key("38QARV0!!!!!!!2CJD9VA2ZZAR0X"),
+			wantErr: true,
+		},
+		{
+			name:    "invalid characters in third group no hyphens",
+			key:     Key("38QARV01ET0G6Z!!!!!!!2ZZAR0X"),
+			wantErr: true,
+		},
+		{
+			name:    "invalid characters in fourth group no hyphens",
+			key:     Key("38QARV01ET0G6Z2CJD9VA!!!!!!!"),
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := tt.key.Bytes()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Key.Bytes() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if err != nil && tt.wantErr {
+				// Verify it's the expected error from processByteGroup
+				expectedErrMsg := "failed to decode Key part"
+				if !strings.Contains(err.Error(), expectedErrMsg) {
+					t.Errorf("Expected error message to contain %q, got %q", expectedErrMsg, err.Error())
+				}
+			}
+		})
+	}
+}
+
+// TestDecodeErrorPath tests the error handling path in the decode function
+// by using keys that pass length validation but contain values that cause overflow
+func TestDecodeErrorPath(t *testing.T) {
+	// Create a key with all Z's that will cause overflow in some parts
+	// ZZZZZZZZ in base32 would overflow uint32 (max 4,294,967,295)
+	overflowKey := Key("ZZZZZZZ-ZZZZZZZ-ZZZZZZZ-ZZZZZZZ")
+	
+	// This key has valid length and format, so it will pass initial validation
+	// but will trigger the error path in decode() due to overflow
+	result, err := overflowKey.Decode()
+	
+	// We should get a valid UUID format back (with fallback zeros)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	
+	// The result should contain the fallback "00000000" for the overflow parts
+	if !strings.Contains(result, "00000000") {
+		t.Errorf("Expected result to contain fallback zeros, got %s", result)
+	}
+	
+	// Test without hyphens
+	overflowKeyNoHyphens := Key("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZ")
+	result2, err2 := overflowKeyNoHyphens.Decode()
+	
+	if err2 != nil {
+		t.Errorf("Unexpected error: %v", err2)
+	}
+	
+	if !strings.Contains(result2, "00000000") {
+		t.Errorf("Expected result to contain fallback zeros, got %s", result2)
+	}
+}
+
+// TestDecodeWithInvalidCrock32 specifically tests decode function with invalid input
+func TestDecodeWithInvalidCrock32(t *testing.T) {
+	// Test the decode function directly with invalid input that triggers the error path
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "overflow input",
+			input:    "ZZZZZZZZ", // 8 Z's would overflow uint32
+			expected: "00000000",
+		},
+		{
+			name:     "invalid characters",
+			input:    "!@#$%^&",
+			expected: "00000000",
+		},
+		{
+			name:     "mixed invalid",
+			input:    "ABC!DEF",
+			expected: "00000000",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := decode(tt.input)
+			if result != tt.expected {
+				t.Errorf("decode(%s) = %s, want %s", tt.input, result, tt.expected)
+			}
+		})
+	}
+}

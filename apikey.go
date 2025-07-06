@@ -2,13 +2,13 @@ package uuidkey
 
 import (
 	"crypto/rand"
+	"encoding/binary"
 	"fmt"
 	"hash"
 	"strings"
 
 	"hash/crc32"
 
-	"github.com/richardlehane/crock32"
 	"golang.org/x/crypto/blake2b"
 )
 
@@ -264,7 +264,7 @@ func ParseAPIKey(apikey string) (APIKey, error) {
 	}
 	for _, c := range checksum {
 		// Check if character is 0-9 or A-F
-		if !((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')) {
+		if (c < '0' || c > '9') && (c < 'A' || c > 'F') {
 			return APIKey{}, fmt.Errorf("invalid checksum format: must be 8 hexadecimal characters")
 		}
 	}
@@ -330,7 +330,22 @@ func generateEntropy(size numOfCrock32Chars) (string, error) {
 			n |= uint64(b) << (8 * (end - i - 1 - j))
 		}
 
-		entropyEncoded.WriteString(crock32.Encode(n))
+		// Convert uint64 to bytes for encoding
+		var buf [8]byte
+		binary.BigEndian.PutUint64(buf[:], n)
+		
+		// Find first non-zero byte
+		start := 0
+		for j := 0; j < 8; j++ {
+			if buf[j] != 0 {
+				start = j
+				break
+			}
+		}
+		
+		// Encode using standard library
+		encoded := crockford.EncodeToString(buf[start:])
+		entropyEncoded.WriteString(encoded)
 	}
 
 	result := strings.ToUpper(entropyEncoded.String())

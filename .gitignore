@@ -34,4 +34,7 @@ go.work.sum
 # devbox files
 .devbox/
 
+# claude code files
+.claude/
+
 # End of https://www.toptal.com/developers/gitignore/api/go
