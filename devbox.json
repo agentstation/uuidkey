@@ -5,7 +5,7 @@
       "go@1.22.5",
       "golangci-lint@1.60.3",
       "gomarkdoc@1.1.0",
-      "goreleaser@2.5.1"
+      "goreleaser@latest"
     ],
     "shell": {
       "init_hook": [
