@@ -17,9 +17,10 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
-# Coverage file
+# Coverage files
 coverage.txt
 coverage.out
+coverage.html
 
 # Go workspace file
 go.work
