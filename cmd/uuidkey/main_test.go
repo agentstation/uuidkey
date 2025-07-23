@@ -8,20 +8,56 @@ import (
 	"testing"
 )
 
-func TestMain(t *testing.T) {
-	// Save original args
-	oldArgs := os.Args
-	defer func() { os.Args = oldArgs }()
-
-	// Test that main doesn't panic with version command
-	os.Args = []string{"uuidkey", "version", "--json"}
+func TestMainFunc(t *testing.T) {
 	
-	// Main should not panic
+	// Save original args and exit function
+	oldArgs := os.Args
+	oldExit := osExit
+	defer func() { 
+		os.Args = oldArgs
+		osExit = oldExit
+	}()
+
+	// Mock osExit to capture exit code
+	var exitCode int
+	exitCalled := false
+	osExit = func(code int) {
+		exitCode = code
+		exitCalled = true
+	}
+
+	// Test that main handles errors correctly
+	os.Args = []string{"uuidkey", "invalid-command"}
+	
+	// Capture all output to prevent interference with coverage
+	// Use originalStdout from testutil_test.go to ensure we restore the real stdout
+	oldCmd := rootCmd
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+	os.Stderr = w
+	
+	// Run main
 	main()
+	
+	// Restore to the real original stdout, not a local copy
+	_ = w.Close()
+	os.Stdout = originalStdout
+	os.Stderr = originalStderr
+	rootCmd = oldCmd
+	_, _ = io.ReadAll(r)
+
+	// Should have called exit with code 1
+	if !exitCalled {
+		t.Error("expected os.Exit to be called")
+	}
+	if exitCode != 1 {
+		t.Errorf("expected exit code 1, got %d", exitCode)
+	}
 }
 
 // TestMainFunction tests main.go execution with various scenarios
 func TestMainFunction(t *testing.T) {
+	
 	// Save original args and exit function
 	oldArgs := os.Args
 	oldExit := osExit
@@ -82,7 +118,6 @@ func TestMainFunction(t *testing.T) {
 			}
 
 			// Capture stdout and stderr to prevent test output pollution
-			oldStdout := os.Stdout
 			oldCmd := rootCmd
 			r, w, _ := os.Pipe()
 			os.Stdout = w
@@ -90,9 +125,9 @@ func TestMainFunction(t *testing.T) {
 			// Run main
 			main()
 			
-			// Restore
+			// Restore to the real original stdout
 			_ = w.Close()
-			os.Stdout = oldStdout
+			os.Stdout = originalStdout
 			rootCmd = oldCmd
 			_, _ = io.ReadAll(r)
 

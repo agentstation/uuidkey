@@ -6,13 +6,48 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/spf13/cobra"
+)
+
+var (
+	// Save original file descriptors at package initialization
+	// These must be captured before any test runs
+	originalStdout = os.Stdout
+	originalStderr = os.Stderr
+	originalStdin  = os.Stdin
 )
 
 func init() {
 	// Set test environment variable to prevent os.Exit during tests
 	_ = os.Setenv("GO_TEST", "1")
+}
+
+// TestMain runs before/after all tests in this package
+func TestMain(m *testing.M) {
+	// Run tests and capture the exit code
+	code := m.Run()
+	
+	// Before exiting, ensure all file descriptors are restored
+	// This helps prevent broken pipe errors in coverage reports
+	if os.Stdout != originalStdout {
+		_ = os.Stdout.Sync()
+		os.Stdout = originalStdout
+	}
+	if os.Stderr != originalStderr {
+		_ = os.Stderr.Sync()
+		os.Stderr = originalStderr
+	}
+	if os.Stdin != originalStdin {
+		os.Stdin = originalStdin
+	}
+	
+	// Force a small delay to let any pending I/O complete
+	time.Sleep(50 * time.Millisecond)
+	
+	// Exit with the test result code
+	os.Exit(code)
 }
 
 // executeCommand runs a cobra command with the given arguments and returns the output
@@ -60,12 +95,19 @@ func captureStdout(f func()) string {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
+	// Run the function in the current goroutine
 	f()
 
+	// Close the writer to signal EOF to the reader
 	_ = w.Close()
+	
+	// Restore stdout before reading to avoid deadlock
 	os.Stdout = old
 
+	// Read all output
 	out, _ := io.ReadAll(r)
+	_ = r.Close()
+	
 	return string(out)
 }
 
