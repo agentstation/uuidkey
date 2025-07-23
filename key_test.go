@@ -172,7 +172,7 @@ func TestUUIDString(t *testing.T) {
 
 // TestGoogleUUIDRoundtrip tests the roundtrip from Google's UUID library to our custom key format and back
 func TestGoogleUUIDRoundtrip(t *testing.T) {
-	for i := 0; i < 1000; i++ { // Test with 1000 random UUIDs
+	for range 1000 { // Test with 1000 random UUIDs
 		// Generate a random UUID using Google's library
 		originalUUID := googleUUID.New()
 		uuidString := originalUUID.String()
@@ -213,7 +213,7 @@ func TestGoogleUUIDRoundtrip(t *testing.T) {
 
 // TestGoogleUUIDRoundtripWithoutHyphens tests the roundtrip from Google's UUID library to our custom key format and back without hyphens
 func TestGoogleUUIDRoundtripWithoutHyphens(t *testing.T) {
-	for i := 0; i < 1000; i++ { // Test with 1000 random UUIDs
+	for range 1000 { // Test with 1000 random UUIDs
 		// Generate a random UUID using Google's library
 		originalUUID := googleUUID.New()
 		uuidString := originalUUID.String()
@@ -254,7 +254,7 @@ func TestGoogleUUIDRoundtripWithoutHyphens(t *testing.T) {
 
 // TestGofrsUUIDRoundtrip tests the roundtrip from gofrs/uuid library to our custom key format and back
 func TestGofrsUUIDRoundtrip(t *testing.T) {
-	for i := 0; i < 1000; i++ { // Test with 1000 random UUIDs
+	for range 1000 { // Test with 1000 random UUIDs
 		// Generate a random UUID using gofrs/uuid library
 		originalUUID, err := gofrsUUID.NewV4()
 		if err != nil {
@@ -298,7 +298,7 @@ func TestGofrsUUIDRoundtrip(t *testing.T) {
 
 // TestGofrsUUIDRoundtripWithoutHyphens tests the roundtrip from gofrs/uuid library to our custom key format and back without hyphens
 func TestGofrsUUIDRoundtripWithoutHyphens(t *testing.T) {
-	for i := 0; i < 1000; i++ { // Test with 1000 random UUIDs
+	for range 1000 { // Test with 1000 random UUIDs
 		// Generate a random UUID using gofrs/uuid library
 		originalUUID, err := gofrsUUID.NewV4()
 		if err != nil {
@@ -426,7 +426,7 @@ func TestEncodeBytes(t *testing.T) {
 
 // TestEncodeBytesRoundTripGoogle tests the roundtrip from Google's UUID library to our custom key format and back
 func TestEncodeBytesRoundTripGoogle(t *testing.T) {
-	for i := 0; i < 1000; i++ { // Test with 1000 random UUIDs
+	for range 1000 { // Test with 1000 random UUIDs
 		// Generate a random UUID using Google's library
 		originalUUID := googleUUID.New()
 		var uuidBytes [16]byte
@@ -461,7 +461,7 @@ func TestEncodeBytesRoundTripGoogle(t *testing.T) {
 
 // TestEncodeBytesRoundTripGoogleWithoutHyphens tests the roundtrip from Google's UUID library to our custom key format and back without hyphens
 func TestEncodeBytesRoundTripGoogleWithoutHyphens(t *testing.T) {
-	for i := 0; i < 1000; i++ { // Test with 1000 random UUIDs
+	for range 1000 { // Test with 1000 random UUIDs
 		// Generate a random UUID using Google's library
 		originalUUID := googleUUID.New()
 		var uuidBytes [16]byte
@@ -496,7 +496,7 @@ func TestEncodeBytesRoundTripGoogleWithoutHyphens(t *testing.T) {
 
 // TestEncodeBytesRoundTripGofrs tests the roundtrip from gofrs/uuid library to our custom key format and back
 func TestEncodeBytesRoundTripGofrs(t *testing.T) {
-	for i := 0; i < 1000; i++ { // Test with 1000 random UUIDs
+	for range 1000 { // Test with 1000 random UUIDs
 		// Generate a random UUID using gofrs/uuid library
 		originalUUID, err := gofrsUUID.NewV4()
 		if err != nil {
@@ -534,7 +534,7 @@ func TestEncodeBytesRoundTripGofrs(t *testing.T) {
 
 // TestEncodeBytesRoundTripGofrsWithoutHyphens tests the roundtrip from gofrs/uuid library to our custom key format and back without hyphens
 func TestEncodeBytesRoundTripGofrsWithoutHyphens(t *testing.T) {
-	for i := 0; i < 1000; i++ { // Test with 1000 random UUIDs
+	for range 1000 { // Test with 1000 random UUIDs
 		// Generate a random UUID using gofrs/uuid library
 		originalUUID, err := gofrsUUID.NewV4()
 		if err != nil {
@@ -787,16 +787,16 @@ func TestIsValidPartEdgeCases(t *testing.T) {
 		valid bool
 	}{
 		// Characters just outside valid ranges
-		{"char before 0", "//////1", false}, // '/' is just before '0'
-		{"char after Z", "ABCDE[F", false},  // '[' is just after 'Z'
+		{"char before 0", "//////1", false},        // '/' is just before '0'
+		{"char after Z", "ABCDE[F", false},         // '[' is just after 'Z'
 		{"char between 9 and A", "12345:6", false}, // ':' is between '9' and 'A'
-		
+
 		// Invalid Crockford characters
 		{"contains I", "ABCDIEF", false},
 		{"contains L", "ABCDLEF", false},
 		{"contains O", "ABCDOEF", false},
 		{"contains U", "ABCDUEF", false},
-		
+
 		// Valid edge cases
 		{"all zeros", "0000000", true},
 		{"all nines", "9999999", true},
@@ -890,29 +890,29 @@ func TestDecodeErrorPath(t *testing.T) {
 	// Create a key with all Z's that will cause overflow in some parts
 	// ZZZZZZZZ in base32 would overflow uint32 (max 4,294,967,295)
 	overflowKey := Key("ZZZZZZZ-ZZZZZZZ-ZZZZZZZ-ZZZZZZZ")
-	
+
 	// This key has valid length and format, so it will pass initial validation
 	// but will trigger the error path in decode() due to overflow
 	result, err := overflowKey.Decode()
-	
+
 	// We should get a valid UUID format back (with fallback zeros)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
-	
+
 	// The result should contain the fallback "00000000" for the overflow parts
 	if !strings.Contains(result, "00000000") {
 		t.Errorf("Expected result to contain fallback zeros, got %s", result)
 	}
-	
+
 	// Test without hyphens
 	overflowKeyNoHyphens := Key("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZ")
 	result2, err2 := overflowKeyNoHyphens.Decode()
-	
+
 	if err2 != nil {
 		t.Errorf("Unexpected error: %v", err2)
 	}
-	
+
 	if !strings.Contains(result2, "00000000") {
 		t.Errorf("Expected result to contain fallback zeros, got %s", result2)
 	}

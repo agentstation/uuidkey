@@ -307,10 +307,7 @@ func generateEntropy(size numOfCrock32Chars) (string, error) {
 		blake2bHasher.Write(inputBytes)
 		hash := blake2bHasher.Sum(nil)
 
-		copyLen := numOfRandomBytes - pos
-		if copyLen > len(hash) {
-			copyLen = len(hash)
-		}
+		copyLen := min(numOfRandomBytes-pos, len(hash))
 		copy(entropy[pos:], hash[:copyLen])
 		inputBytes = hash
 	}
@@ -320,10 +317,7 @@ func generateEntropy(size numOfCrock32Chars) (string, error) {
 	entropyEncoded.Grow(int(size))
 
 	for i := 0; i < len(entropy); i += 8 {
-		end := i + 8
-		if end > len(entropy) {
-			end = len(entropy)
-		}
+		end := min(i+8, len(entropy))
 
 		var n uint64
 		for j, b := range entropy[i:end] {
@@ -333,16 +327,16 @@ func generateEntropy(size numOfCrock32Chars) (string, error) {
 		// Convert uint64 to bytes for encoding
 		var buf [8]byte
 		binary.BigEndian.PutUint64(buf[:], n)
-		
+
 		// Find first non-zero byte
 		start := 0
-		for j := 0; j < 8; j++ {
+		for j := range 8 {
 			if buf[j] != 0 {
 				start = j
 				break
 			}
 		}
-		
+
 		// Encode using standard library
 		encoded := crockford.EncodeToString(buf[start:])
 		entropyEncoded.WriteString(encoded)

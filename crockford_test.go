@@ -23,7 +23,7 @@ func TestCrockford32ConstantTime(t *testing.T) {
 	}
 
 	// Warm up
-	for i := 0; i < 1000; i++ {
+	for i := range 1000 {
 		_ = crock32Encode(uint32(i))
 	}
 
@@ -33,7 +33,7 @@ func TestCrockford32ConstantTime(t *testing.T) {
 
 	for _, tc := range testCases {
 		start := time.Now()
-		for i := 0; i < iterations; i++ {
+		for range iterations {
 			_ = crock32Encode(tc.value)
 		}
 		encodeTimes[tc.name] = time.Since(start)
@@ -70,7 +70,7 @@ func TestCrockford32ConstantTime(t *testing.T) {
 	}
 
 	// Warm up
-	for i := 0; i < 1000; i++ {
+	for range 1000 {
 		_, _ = crock32Decode("1234567")
 	}
 
@@ -78,7 +78,7 @@ func TestCrockford32ConstantTime(t *testing.T) {
 
 	for _, str := range testStrings {
 		start := time.Now()
-		for i := 0; i < iterations; i++ {
+		for range iterations {
 			_, _ = crock32Decode(str)
 		}
 		decodeTimes[str] = time.Since(start)
@@ -113,7 +113,7 @@ func BenchmarkCrockford32Encode(b *testing.B) {
 	}
 
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for i := range b.N {
 		_ = crock32Encode(values[i%len(values)])
 	}
 }
@@ -128,7 +128,7 @@ func BenchmarkCrockford32Decode(b *testing.B) {
 	}
 
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for i := range b.N {
 		_, _ = crock32Decode(strings[i%len(strings)])
 	}
 }

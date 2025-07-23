@@ -20,7 +20,7 @@ func TestUUIDCommand(t *testing.T) {
 				// Should generate both UUID and key
 				assertContains(t, output, "UUID:")
 				assertContains(t, output, "Key:")
-				
+
 				// Extract UUID from output
 				lines := strings.Split(output, "\n")
 				for _, line := range lines {
@@ -142,11 +142,11 @@ func TestUUIDCommand(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			output, err := executeCommand(rootCmd, tt.args...)
-			
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("expected error: %v, got: %v (output: %s)", tt.wantErr, err, output)
 			}
-			
+
 			if tt.check != nil && err == nil {
 				tt.check(t, output)
 			}
@@ -158,13 +158,13 @@ func TestUUIDVersionGeneration(t *testing.T) {
 	// Test that multiple generations produce different UUIDs
 	t.Run("unique generation", func(t *testing.T) {
 		uuids := make(map[string]bool)
-		
-		for i := 0; i < 10; i++ {
+
+		for range 10 {
 			output, err := executeCommand(rootCmd, "uuid", "-q")
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
-			
+
 			uuid := strings.TrimSpace(output)
 			if uuids[uuid] {
 				t.Errorf("duplicate UUID generated: %s", uuid)
@@ -172,11 +172,11 @@ func TestUUIDVersionGeneration(t *testing.T) {
 			uuids[uuid] = true
 		}
 	})
-	
+
 	// Test v6 is sortable
 	t.Run("v6 sortable", func(t *testing.T) {
 		// Generate multiple v6 UUIDs
-		for i := 0; i < 5; i++ {
+		for range 5 {
 			output, err := executeCommand(rootCmd, "uuid", "--version", "6", "-q")
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
@@ -187,7 +187,7 @@ func TestUUIDVersionGeneration(t *testing.T) {
 				t.Errorf("expected v6 UUID, got %s", uuid)
 			}
 		}
-		// Note: v6 UUIDs are sortable by time but might not always be strictly 
+		// Note: v6 UUIDs are sortable by time but might not always be strictly
 		// increasing due to timing resolution and MAC address components
 	})
 }
@@ -253,11 +253,11 @@ func TestUUIDErrors(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			output, err := executeCommand(newRootCommand(), tt.args...)
-			
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("expected error: %v, got: %v", tt.wantErr, err)
 			}
-			
+
 			if tt.check != nil {
 				tt.check(t, output)
 			}
@@ -374,11 +374,11 @@ func TestUUIDGenerateErrors(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			output, err := executeCommand(rootCmd, tt.args...)
-			
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("expected error: %v, got: %v", tt.wantErr, err)
 			}
-			
+
 			if tt.check != nil {
 				tt.check(t, output)
 			}
@@ -489,11 +489,11 @@ func TestUUIDSpecificCases(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			output, err := executeCommand(newRootCommand(), tt.args...)
-			
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("expected error: %v, got: %v (output: %s)", tt.wantErr, err, output)
 			}
-			
+
 			if tt.check != nil {
 				tt.check(t, output)
 			}

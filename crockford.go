@@ -15,17 +15,17 @@ func crock32Encode(n uint32) string {
 	if n == 0 {
 		return "0"
 	}
-	
+
 	// Use a fixed-size array to avoid allocations
 	var buf [8]byte // Maximum size needed for uint32 in base32
 	idx := len(buf)
-	
+
 	for n > 0 {
 		idx--
 		buf[idx] = digits[n%32]
 		n /= 32
 	}
-	
+
 	return string(buf[idx:])
 }
 
@@ -37,12 +37,12 @@ var decodeTable = func() [256]byte {
 	for i := range table {
 		table[i] = 255
 	}
-	
+
 	// Numbers 0-9
 	for i := byte('0'); i <= '9'; i++ {
 		table[i] = i - '0'
 	}
-	
+
 	// Uppercase letters
 	table['A'] = 10
 	table['B'] = 11
@@ -70,14 +70,14 @@ var decodeTable = func() [256]byte {
 	table['X'] = 29
 	table['Y'] = 30
 	table['Z'] = 31
-	
+
 	// Lowercase letters (same values as uppercase)
 	for c := byte('a'); c <= 'z'; c++ {
 		if table[c-'a'+'A'] != 255 {
 			table[c] = table[c-'a'+'A']
 		}
 	}
-	
+
 	// Special mappings per Crockford spec
 	table['O'] = 0
 	table['o'] = 0
@@ -85,7 +85,7 @@ var decodeTable = func() [256]byte {
 	table['i'] = 1
 	table['L'] = 1
 	table['l'] = 1
-	
+
 	return table
 }()
 
@@ -94,21 +94,21 @@ func crock32Decode(s string) (uint32, error) {
 	if len(s) == 0 {
 		return 0, fmt.Errorf("crock32.Decode: empty string")
 	}
-	
+
 	var result uint32
-	for i := 0; i < len(s); i++ {
+	for i := range len(s) {
 		// Use lookup table for fast conversion
 		digit := decodeTable[s[i]]
 		if digit == 255 {
 			return 0, fmt.Errorf("crock32.Decode: invalid character %c", s[i])
 		}
-		
+
 		// Check for overflow before multiplication
 		if result > (^uint32(0))/32 {
 			return 0, fmt.Errorf("crock32.Decode: integer overflow")
 		}
 		result = result*32 + uint32(digit)
 	}
-	
+
 	return result, nil
 }

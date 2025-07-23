@@ -144,11 +144,11 @@ func TestAPIKeyCommand(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Use executeCommand which handles state reset
 			output, err := executeCommand(rootCmd, tt.args...)
-			
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("expected error: %v, got: %v (output: %s)", tt.wantErr, err, output)
 			}
-			
+
 			if tt.check != nil && err == nil {
 				tt.check(t, output)
 			}
@@ -160,13 +160,13 @@ func TestAPIKeyGeneration(t *testing.T) {
 	// Test that multiple generations produce different API keys
 	t.Run("unique generation", func(t *testing.T) {
 		keys := make(map[string]bool)
-		
-		for i := 0; i < 10; i++ {
+
+		for range 10 {
 			output, err := executeCommand(rootCmd, "apikey", "--prefix", "UNIQ", "-q")
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
-			
+
 			key := strings.TrimSpace(output)
 			if keys[key] {
 				t.Errorf("duplicate API key generated: %s", key)
@@ -174,18 +174,18 @@ func TestAPIKeyGeneration(t *testing.T) {
 			keys[key] = true
 		}
 	})
-	
+
 	// Test different entropy levels produce different length keys
 	t.Run("entropy levels", func(t *testing.T) {
 		entropies := []int{128, 160, 256}
 		lengths := make(map[int]int)
-		
+
 		for _, entropy := range entropies {
 			output, err := executeCommand(rootCmd, "apikey", "--prefix", "ENT", "--entropy", fmt.Sprintf("%d", entropy), "-q")
 			if err != nil {
 				t.Fatalf("unexpected error for entropy %d: %v", entropy, err)
 			}
-			
+
 			key := strings.TrimSpace(output)
 			parts := strings.Split(key, "_")
 			if len(parts) == 3 {
@@ -193,7 +193,7 @@ func TestAPIKeyGeneration(t *testing.T) {
 				lengths[entropy] = len(parts[1])
 			}
 		}
-		
+
 		// Higher entropy should have longer keys
 		// Note: The actual implementation concatenates key+entropy, so longer entropy = longer total
 	})
@@ -260,11 +260,11 @@ func TestAPIKeyErrors(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			output, err := executeCommand(newRootCommand(), tt.args...)
-			
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("expected error: %v, got: %v (output: %s)", tt.wantErr, err, output)
 			}
-			
+
 			if tt.check != nil {
 				tt.check(t, output)
 			}
@@ -317,11 +317,11 @@ func TestAPIKeyEdgeCases(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			output, err := executeCommand(rootCmd, tt.args...)
-			
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("expected error: %v, got: %v", tt.wantErr, err)
 			}
-			
+
 			if tt.check != nil {
 				tt.check(t, output)
 			}
@@ -369,11 +369,11 @@ func TestAPIKeySpecificEntropyCases(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			output, err := executeCommand(newRootCommand(), tt.args...)
-			
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("expected error: %v, got: %v (output: %s)", tt.wantErr, err, output)
 			}
-			
+
 			if tt.check != nil {
 				tt.check(t, output)
 			}

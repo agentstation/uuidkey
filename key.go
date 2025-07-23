@@ -113,7 +113,7 @@ func isValidPart(part string) bool {
 	if len(part) != KeyPartLength {
 		return false
 	}
-	for i := 0; i < KeyPartLength; i++ {
+	for i := range KeyPartLength {
 		c := part[i]
 		// Combine conditions to reduce branching
 		if c > 'Z' || (c < '0' || (c > '9' && c < 'A')) ||
@@ -140,7 +140,7 @@ func decode(s string) string {
 		// Fall back to zero on error
 		return "00000000"
 	}
-	
+
 	// Format as 8-character hex string
 	return fmt.Sprintf("%08x", n)
 }
@@ -182,20 +182,19 @@ func Encode(uuid string, opts ...Option) (Key, error) {
 
 func processAndWritePart(builder *strings.Builder, src string) {
 	n, _ := strconv.ParseUint(src, 16, 32)
-	
+
 	// Encode using number-based crock32 approach
 	encoded := crock32Encode(uint32(n))
 	padding := 7 - len(encoded)
 
 	// Write padding zeros
-	for i := 0; i < padding; i++ {
+	for range padding {
 		builder.WriteByte('0')
 	}
 
 	// Write encoded part
 	builder.WriteString(encoded)
 }
-
 
 // EncodeBytes encodes a [16]byte UUID into a Key.
 func EncodeBytes(uuid [16]byte, opts ...Option) (Key, error) {
@@ -232,7 +231,7 @@ func writeEncodedPart(builder *strings.Builder, n uint64) {
 	padding := 7 - len(encoded)
 
 	// Write padding zeros
-	for i := 0; i < padding; i++ {
+	for range padding {
 		builder.WriteByte('0')
 	}
 
@@ -349,7 +348,7 @@ func processByteGroup(part string, uuid *[16]byte, offset int) error {
 	if err != nil {
 		return fmt.Errorf("failed to decode Key part: %v", err)
 	}
-	
+
 	// Convert uint32 to bytes
 	binary.BigEndian.PutUint32(uuid[offset:offset+4], n)
 	return nil
