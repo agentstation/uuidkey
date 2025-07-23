@@ -1,0 +1,1160 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>uuidkey: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/agentstation/uuidkey/cmd/uuidkey/apikey.go (88.9%)</option>
+				
+				<option value="file1">github.com/agentstation/uuidkey/cmd/uuidkey/commands.go (100.0%)</option>
+				
+				<option value="file2">github.com/agentstation/uuidkey/cmd/uuidkey/decode.go (90.0%)</option>
+				
+				<option value="file3">github.com/agentstation/uuidkey/cmd/uuidkey/encode.go (100.0%)</option>
+				
+				<option value="file4">github.com/agentstation/uuidkey/cmd/uuidkey/key.go (85.4%)</option>
+				
+				<option value="file5">github.com/agentstation/uuidkey/cmd/uuidkey/main.go (50.0%)</option>
+				
+				<option value="file6">github.com/agentstation/uuidkey/cmd/uuidkey/root.go (100.0%)</option>
+				
+				<option value="file7">github.com/agentstation/uuidkey/cmd/uuidkey/uuid.go (86.1%)</option>
+				
+				<option value="file8">github.com/agentstation/uuidkey/cmd/uuidkey/version.go (67.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package main
+
+import (
+        "fmt"
+
+        "github.com/agentstation/uuidkey"
+        "github.com/spf13/cobra"
+)
+
+var (
+        prefix  string
+        entropy int
+)
+
+var apikeyCmd = &amp;cobra.Command{
+        Use:   "apikey [apikey]",
+        Short: "Generate or parse API keys",
+        Long: `Generate new API keys with configurable entropy or parse existing ones.
+
+With no input, generates a new API key (requires --prefix).
+With an API key as input, parses and validates it.`,
+        Args: cobra.MaximumNArgs(1),
+        RunE: runAPIKey,
+        Example: `  # Generate API key
+  uuidkey apikey -p MYAPP
+  
+  # Generate with 256-bit entropy
+  uuidkey apikey -p MYAPP -e 256
+  
+  # Parse existing API key
+  uuidkey apikey MYAPP_38QARV01ET0G6Z2CJD9VA2ZZAR0XJBJLSO7WBNWY3F_A1B2C3D8`,
+}
+
+func init() <span class="cov8" title="1">{
+        apikeyCmd.Flags().StringVarP(&amp;prefix, "prefix", "p", "", "API key prefix (required for generation)")
+        apikeyCmd.Flags().IntVarP(&amp;entropy, "entropy", "e", 128, "Entropy bits: 128, 160, or 256")
+        apikeyCmd.Flags().IntVarP(&amp;uuidVersion, "version", "v", 4, "UUID version: 4, 6, or 7")
+        rootCmd.AddCommand(apikeyCmd)
+}</span>
+
+func runAPIKey(cmd *cobra.Command, args []string) error <span class="cov8" title="1">{
+        if len(args) == 0 </span><span class="cov8" title="1">{
+                // Generate new API key
+                if prefix == "" </span><span class="cov8" title="1">{
+                        return fmt.Errorf("either provide an API key to parse or use --prefix to generate a new one")
+                }</span>
+                
+                <span class="cov8" title="1">u, err := generateUUID()
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                // Validate entropy value
+                <span class="cov8" title="1">if entropy != 128 &amp;&amp; entropy != 160 &amp;&amp; entropy != 256 </span><span class="cov8" title="1">{
+                        return fmt.Errorf("invalid entropy value: %d (must be 128, 160, or 256)", entropy)
+                }</span>
+                
+                <span class="cov8" title="1">apiKey, err := uuidkey.NewAPIKey(prefix, u, getEntropyOption())
+                if err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("error generating API key: %w", err)
+                }</span>
+                
+                <span class="cov8" title="1">data := map[string]interface{}{
+                        "apikey":       apiKey.String(),
+                        "prefix":       apiKey.Prefix,
+                        "uuid":         u,
+                        "uuid_version": uuidVersion,
+                        "entropy_bits": entropy,
+                        "key":          apiKey.Key.String(),
+                        "entropy":      apiKey.Entropy,
+                        "checksum":     apiKey.Checksum,
+                        "full_key":     apiKey.String(),
+                }
+                output(data, apiKey.String())
+                return nil</span>
+        }
+        
+        // Parse existing API key
+        <span class="cov8" title="1">apiKeyStr := args[0]
+        apiKey, err := uuidkey.ParseAPIKey(apiKeyStr)
+        if err != nil </span><span class="cov8" title="1">{
+                return fmt.Errorf("error parsing API key: %w", err)
+        }</span>
+        
+        // Decode the key to get the UUID
+        <span class="cov8" title="1">u, _ := apiKey.Key.Decode()
+        
+        // Calculate entropy bits based on entropy string length
+        entropyBits := 0
+        switch len(apiKey.Entropy) </span>{
+        case 14:<span class="cov8" title="1">
+                entropyBits = 128</span>
+        case 21:<span class="cov0" title="0">
+                entropyBits = 160</span>
+        case 42:<span class="cov0" title="0">
+                entropyBits = 256</span>
+        }
+        
+        <span class="cov8" title="1">data := map[string]interface{}{
+                "valid":        true,
+                "prefix":       apiKey.Prefix,
+                "uuid":         u,
+                "key":          apiKey.Key.String(),
+                "entropy_bits": entropyBits,
+                "checksum":     apiKey.Checksum,
+        }
+        
+        out := cmd.OutOrStdout()
+        
+        if jsonOutput </span><span class="cov8" title="1">{
+                output(data, "")
+        }</span> else<span class="cov8" title="1"> if quietMode </span><span class="cov0" title="0">{
+                _, _ = fmt.Fprintln(out, "Valid")
+        }</span> else<span class="cov8" title="1"> {
+                _, _ = fmt.Fprintln(out, "Valid API Key")
+                _, _ = fmt.Fprintf(out, "Prefix:   %s\n", apiKey.Prefix)
+                _, _ = fmt.Fprintf(out, "UUID:     %s\n", u)
+                _, _ = fmt.Fprintf(out, "Key:      %s\n", apiKey.Key)
+                _, _ = fmt.Fprintf(out, "Entropy:  %d bits\n", entropyBits)
+                _, _ = fmt.Fprintf(out, "Checksum: %s\n", apiKey.Checksum)
+        }</span>
+        
+        <span class="cov8" title="1">return nil</span>
+}
+
+// getEntropyOption returns the entropy option based on flag
+func getEntropyOption() uuidkey.Option <span class="cov8" title="1">{
+        switch entropy </span>{
+        case 160:<span class="cov8" title="1">
+                return uuidkey.With160BitEntropy</span>
+        case 256:<span class="cov8" title="1">
+                return uuidkey.With256BitEntropy</span>
+        default:<span class="cov8" title="1">
+                return uuidkey.With128BitEntropy</span>
+        }
+}</pre>
+		
+		<pre class="file" id="file1" style="display: none">package main
+
+import (
+        "github.com/spf13/cobra"
+)
+
+// newRootCommand creates a fresh root command instance
+// This is used in tests to ensure complete isolation between test runs
+func newRootCommand() *cobra.Command <span class="cov8" title="1">{
+        cmd := &amp;cobra.Command{
+                Use:   "uuidkey",
+                Short: "UUID to Base32-Crockford Key encoder/decoder",
+                Long: `uuidkey is a fast, secure tool for UUID generation and Base32-Crockford encoding.
+
+It provides:
+  - UUID generation (v4, v6, v7)
+  - Base32-Crockford encoding/decoding
+  - API key generation with configurable entropy
+  - Smart input detection (no input = generate)`,
+        }
+
+        // Add persistent flags
+        cmd.PersistentFlags().BoolVarP(&amp;jsonOutput, "json", "j", false, "Output in JSON format")
+        cmd.PersistentFlags().BoolVarP(&amp;quietMode, "quiet", "q", false, "Minimal output")
+        
+        // Disable completion command in tests
+        cmd.CompletionOptions.DisableDefaultCmd = true
+
+        // Add commands
+        cmd.AddCommand(newUUIDCommand())
+        cmd.AddCommand(newKeyCommand())
+        cmd.AddCommand(newAPIKeyCommand())
+        cmd.AddCommand(newEncodeCommand())
+        cmd.AddCommand(newDecodeCommand())
+        cmd.AddCommand(newVersionCommand())
+
+        return cmd
+}</span>
+
+// newUUIDCommand creates a fresh uuid command instance
+func newUUIDCommand() *cobra.Command <span class="cov8" title="1">{
+        cmd := &amp;cobra.Command{
+                Use:   "uuid [input]",
+                Short: "Generate or process UUIDs",
+                Long: `Generate new UUIDs or encode/decode based on input.
+
+With no input, generates a new UUID.
+With a UUID as input, encodes it to a key.
+With a key as input, decodes it to a UUID.`,
+                Args: cobra.MaximumNArgs(1),
+                RunE: runUUID,
+                Example: `  # Generate new UUID v4
+  uuidkey uuid
+  
+  # Generate UUID v6 (k-sortable)
+  uuidkey uuid -v 6
+  
+  # Generate UUID v7 (k-sortable, millisecond precision)
+  uuidkey uuid -v 7
+  
+  # Encode UUID to key
+  uuidkey uuid 550e8400-e29b-41d4-a716-446655440000
+  
+  # Decode key to UUID
+  uuidkey uuid 1AGX100-3H9PGEM-2KHCH36-1AM8000`,
+        }
+
+        cmd.Flags().IntVarP(&amp;uuidVersion, "version", "v", 4, "UUID version: 4, 6, or 7")
+        cmd.Flags().StringVarP(&amp;timeFlag, "time", "t", "", "Custom timestamp for v6/v7 (RFC3339 format)")
+
+        return cmd
+}</span>
+
+// newKeyCommand creates a fresh key command instance
+func newKeyCommand() *cobra.Command <span class="cov8" title="1">{
+        cmd := &amp;cobra.Command{
+                Use:   "key [input]",
+                Short: "Generate or encode keys",
+                Long: `Generate new Base32-Crockford keys or encode UUIDs to keys.
+
+With no input, generates a new key from a random UUID.
+With a UUID as input, encodes it to a key.
+With a key as input, validates the key format.`,
+                Args: cobra.MaximumNArgs(1),
+                RunE: runKey,
+                Example: `  # Generate new key
+  uuidkey key
+  
+  # Generate key without hyphens
+  uuidkey key --no-hyphens
+  
+  # Encode UUID to key
+  uuidkey key 550e8400-e29b-41d4-a716-446655440000
+  
+  # Validate existing key
+  uuidkey key 1AGX100-3H9PGEM-2KHCH36-1AM8000`,
+        }
+
+        cmd.Flags().BoolVar(&amp;noHyphens, "no-hyphens", false, "Omit hyphens in output")
+        cmd.Flags().IntVarP(&amp;uuidVersion, "version", "v", 4, "UUID version: 4, 6, or 7")
+
+        return cmd
+}</span>
+
+// newAPIKeyCommand creates a fresh apikey command instance
+func newAPIKeyCommand() *cobra.Command <span class="cov8" title="1">{
+        cmd := &amp;cobra.Command{
+                Use:   "apikey [apikey]",
+                Short: "Generate or parse API keys",
+                Long: `Generate new API keys with configurable entropy or parse existing ones.
+
+With no input, generates a new API key (requires --prefix).
+With an API key as input, parses and validates it.`,
+                Args: cobra.MaximumNArgs(1),
+                RunE: runAPIKey,
+                Example: `  # Generate API key
+  uuidkey apikey -p MYAPP
+  
+  # Generate with 256-bit entropy
+  uuidkey apikey -p MYAPP -e 256
+  
+  # Parse existing API key
+  uuidkey apikey MYAPP_38QARV01ET0G6Z2CJD9VA2ZZAR0XJBJLSO7WBNWY3F_A1B2C3D8`,
+        }
+
+        cmd.Flags().StringVarP(&amp;prefix, "prefix", "p", "", "API key prefix (required for generation)")
+        cmd.Flags().IntVarP(&amp;entropy, "entropy", "e", 128, "Entropy bits: 128, 160, or 256")
+        cmd.Flags().IntVarP(&amp;uuidVersion, "version", "v", 4, "UUID version: 4, 6, or 7")
+
+        return cmd
+}</span>
+
+// newEncodeCommand creates a fresh encode command instance
+func newEncodeCommand() *cobra.Command <span class="cov8" title="1">{
+        cmd := &amp;cobra.Command{
+                Use:   "encode &lt;uuid&gt;",
+                Short: "Encode UUID to Base32-Crockford key",
+                Long:  `Explicitly encode a UUID to Base32-Crockford key format.`,
+                Args:  cobra.ExactArgs(1),
+                RunE:  runEncode,
+                Example: `  # Encode UUID to key
+  uuidkey encode 550e8400-e29b-41d4-a716-446655440000
+  
+  # Encode without hyphens
+  uuidkey encode 550e8400-e29b-41d4-a716-446655440000 --no-hyphens`,
+        }
+
+        cmd.Flags().BoolVar(&amp;noHyphens, "no-hyphens", false, "Omit hyphens in output")
+
+        return cmd
+}</span>
+
+// newDecodeCommand creates a fresh decode command instance
+func newDecodeCommand() *cobra.Command <span class="cov8" title="1">{
+        cmd := &amp;cobra.Command{
+                Use:   "decode &lt;key&gt;",
+                Short: "Decode Base32-Crockford key to UUID",
+                Long:  `Explicitly decode a Base32-Crockford key to UUID format.`,
+                Args:  cobra.ExactArgs(1),
+                RunE:  runDecode,
+                Example: `  # Decode key to UUID
+  uuidkey decode 1AGX100-3H9PGEM-2KHCH36-1AM8000
+  
+  # Decode key without hyphens
+  uuidkey decode 1AGX1003H9PGEM2KHCH361AM8000`,
+        }
+
+        return cmd
+}</span>
+
+// newVersionCommand creates a fresh version command instance
+func newVersionCommand() *cobra.Command <span class="cov8" title="1">{
+        cmd := &amp;cobra.Command{
+                Use:   "version",
+                Short: "Display version and build information",
+                Long: `Display detailed version, build information, and optionally verify binary integrity.
+
+The version command shows:
+  - Version number and build metadata
+  - Git commit and build date
+  - Go version and platform
+  - Binary checksum verification (optional)`,
+                RunE: runVersion,
+                Example: `  # Show version
+  uuidkey version
+  
+  # Verify binary checksum
+  uuidkey version --verify
+  
+  # Verify against online checksums
+  uuidkey version --verify-online`,
+        }
+
+        cmd.Flags().BoolVar(&amp;verifyChecksum, "verify", false, "Verify binary checksum")
+        cmd.Flags().BoolVar(&amp;verifyOnline, "verify-online", false, "Verify against online checksums")
+
+        return cmd
+}</span>
+
+// setCurrentCommand sets a command instance as the current command for output function
+// This is needed because the output function references rootCmd
+var currentCmd *cobra.Command
+
+func setCurrentCommand(cmd *cobra.Command) <span class="cov8" title="1">{
+        currentCmd = cmd
+}</span>
+
+// getCurrentCommand returns the current command or rootCmd as fallback
+func getCurrentCommand() *cobra.Command <span class="cov8" title="1">{
+        if currentCmd != nil </span><span class="cov8" title="1">{
+                return currentCmd
+        }</span>
+        <span class="cov8" title="1">return rootCmd</span>
+}</pre>
+		
+		<pre class="file" id="file2" style="display: none">package main
+
+import (
+        "fmt"
+        
+        "github.com/agentstation/uuidkey"
+        "github.com/spf13/cobra"
+)
+
+var decodeCmd = &amp;cobra.Command{
+        Use:   "decode &lt;key&gt;",
+        Short: "Decode Base32-Crockford key to UUID",
+        Long:  `Explicitly decode a Base32-Crockford key to UUID format.`,
+        Args:  cobra.ExactArgs(1),
+        RunE:  runDecode,
+        Example: `  # Decode key to UUID
+  uuidkey decode 1AGX100-3H9PGEM-2KHCH36-1AM8000
+  
+  # Decode key without hyphens
+  uuidkey decode 1AGX1003H9PGEM2KHCH361AM8000`,
+}
+
+func init() <span class="cov8" title="1">{
+        rootCmd.AddCommand(decodeCmd)
+}</span>
+
+func runDecode(cmd *cobra.Command, args []string) error <span class="cov8" title="1">{
+        key := args[0]
+        parsedKey, err := uuidkey.Parse(key)
+        if err != nil </span><span class="cov8" title="1">{
+                return fmt.Errorf("error parsing key: %w", err)
+        }</span>
+        
+        <span class="cov8" title="1">uuid, err := parsedKey.Decode()
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("error decoding key: %w", err)
+        }</span>
+        
+        <span class="cov8" title="1">output(map[string]interface{}{"key": key, "uuid": uuid}, uuid)
+        return nil</span>
+}</pre>
+		
+		<pre class="file" id="file3" style="display: none">package main
+
+import (
+        "fmt"
+        
+        "github.com/agentstation/uuidkey"
+        "github.com/spf13/cobra"
+)
+
+var encodeCmd = &amp;cobra.Command{
+        Use:   "encode &lt;uuid&gt;",
+        Short: "Encode UUID to Base32-Crockford key",
+        Long:  `Explicitly encode a UUID to Base32-Crockford key format.`,
+        Args:  cobra.ExactArgs(1),
+        RunE:  runEncode,
+        Example: `  # Encode UUID to key
+  uuidkey encode 550e8400-e29b-41d4-a716-446655440000
+  
+  # Encode without hyphens
+  uuidkey encode 550e8400-e29b-41d4-a716-446655440000 --no-hyphens`,
+}
+
+func init() <span class="cov8" title="1">{
+        encodeCmd.Flags().BoolVar(&amp;noHyphens, "no-hyphens", false, "Omit hyphens in output")
+        rootCmd.AddCommand(encodeCmd)
+}</span>
+
+func runEncode(cmd *cobra.Command, args []string) error <span class="cov8" title="1">{
+        uuid := args[0]
+        key, err := uuidkey.Encode(uuid, getKeyOptions()...)
+        if err != nil </span><span class="cov8" title="1">{
+                return fmt.Errorf("error encoding UUID: %w", err)
+        }</span>
+        
+        <span class="cov8" title="1">output(map[string]interface{}{"uuid": uuid, "key": key.String()}, key.String())
+        return nil</span>
+}</pre>
+		
+		<pre class="file" id="file4" style="display: none">package main
+
+import (
+        "fmt"
+
+        "github.com/agentstation/uuidkey"
+        "github.com/spf13/cobra"
+)
+
+var (
+        noHyphens bool
+)
+
+var keyCmd = &amp;cobra.Command{
+        Use:   "key [input]",
+        Short: "Generate or encode keys",
+        Long: `Generate new Base32-Crockford keys or encode UUIDs to keys.
+
+With no input, generates a new key from a random UUID.
+With a UUID as input, encodes it to a key.
+With a key as input, validates the key format.`,
+        Args: cobra.MaximumNArgs(1),
+        RunE: runKey,
+        Example: `  # Generate new key
+  uuidkey key
+  
+  # Generate key without hyphens
+  uuidkey key --no-hyphens
+  
+  # Encode UUID to key
+  uuidkey key 550e8400-e29b-41d4-a716-446655440000
+  
+  # Validate existing key
+  uuidkey key 1AGX100-3H9PGEM-2KHCH36-1AM8000`,
+}
+
+func init() <span class="cov8" title="1">{
+        keyCmd.Flags().BoolVar(&amp;noHyphens, "no-hyphens", false, "Omit hyphens in output")
+        keyCmd.Flags().IntVarP(&amp;uuidVersion, "version", "v", 4, "UUID version: 4, 6, or 7")
+        rootCmd.AddCommand(keyCmd)
+}</span>
+
+func runKey(cmd *cobra.Command, args []string) error <span class="cov8" title="1">{
+        if len(args) == 0 </span><span class="cov8" title="1">{
+                // Generate new key
+                u, err := generateUUID()
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov8" title="1">key, err := uuidkey.Encode(u, getKeyOptions()...)
+                if err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("error encoding UUID: %w", err)
+                }</span>
+                <span class="cov8" title="1">data := map[string]interface{}{
+                        "uuid":    u,
+                        "key":     key.String(),
+                        "version": uuidVersion,
+                }
+                
+                // Output formatting
+                if quietMode </span><span class="cov8" title="1">{
+                        output(data, key.String())
+                }</span> else<span class="cov8" title="1"> if jsonOutput </span><span class="cov0" title="0">{
+                        output(data, "")
+                }</span> else<span class="cov8" title="1"> {
+                        _, _ = fmt.Fprintf(cmd.OutOrStdout(), "UUID: %s\n", u)
+                        _, _ = fmt.Fprintf(cmd.OutOrStdout(), "Key:  %s\n", key.String())
+                }</span>
+                <span class="cov8" title="1">return nil</span>
+        }
+        
+        <span class="cov8" title="1">input := args[0]
+        inputType := detectInputType(input)
+        
+        switch inputType </span>{
+        case "uuid":<span class="cov8" title="1">
+                // Encode UUID to key
+                key, err := uuidkey.Encode(input, getKeyOptions()...)
+                if err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("error encoding UUID: %w", err)
+                }</span>
+                // Output both UUID and key for consistency
+                <span class="cov8" title="1">if quietMode </span><span class="cov8" title="1">{
+                        output(map[string]interface{}{"uuid": input, "key": key.String()}, key.String())
+                }</span> else<span class="cov8" title="1"> if jsonOutput </span><span class="cov8" title="1">{
+                        output(map[string]interface{}{"uuid": input, "key": key.String()}, "")
+                }</span> else<span class="cov8" title="1"> {
+                        _, _ = fmt.Fprintf(cmd.OutOrStdout(), "UUID: %s\n", input)
+                        _, _ = fmt.Fprintf(cmd.OutOrStdout(), "Key:  %s\n", key.String())
+                }</span>
+        case "key":<span class="cov8" title="1">
+                // Decode key to UUID
+                parsedKey, err := uuidkey.Parse(input)
+                if err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("error parsing key: %w", err)
+                }</span>
+                <span class="cov8" title="1">u, err := parsedKey.Decode()
+                if err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("error decoding key: %w", err)
+                }</span>
+                // Output both key and UUID for consistency
+                <span class="cov8" title="1">if quietMode </span><span class="cov8" title="1">{
+                        output(map[string]interface{}{"key": input, "uuid": u}, u)
+                }</span> else<span class="cov8" title="1"> if jsonOutput </span><span class="cov0" title="0">{
+                        output(map[string]interface{}{"key": input, "uuid": u}, "")
+                }</span> else<span class="cov8" title="1"> {
+                        _, _ = fmt.Fprintf(cmd.OutOrStdout(), "Key:  %s\n", input)
+                        _, _ = fmt.Fprintf(cmd.OutOrStdout(), "UUID: %s\n", u)
+                }</span>
+        default:<span class="cov8" title="1">
+                return fmt.Errorf("invalid input: input doesn't match UUID or key pattern")</span>
+        }
+        
+        <span class="cov8" title="1">return nil</span>
+}
+
+// getKeyOptions returns options for key encoding based on flags
+func getKeyOptions() []uuidkey.Option <span class="cov8" title="1">{
+        var opts []uuidkey.Option
+        if noHyphens </span><span class="cov8" title="1">{
+                opts = append(opts, uuidkey.WithoutHyphens)
+        }</span>
+        <span class="cov8" title="1">return opts</span>
+}</pre>
+		
+		<pre class="file" id="file5" style="display: none">package main
+
+import (
+        "fmt"
+        "os"
+        "runtime"
+)
+
+// Build variables set by ldflags
+var (
+        version = "dev"
+        commit  = "none"
+        date    = "unknown"
+        builtBy = "unknown"
+)
+
+// Runtime variables
+var (
+        goVersion = runtime.Version()
+        platform  = fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH)
+)
+
+func main() <span class="cov8" title="1">{
+        if err := Execute(); err != nil </span><span class="cov0" title="0">{
+                os.Exit(1)
+        }</span>
+}</pre>
+		
+		<pre class="file" id="file6" style="display: none">package main
+
+import (
+        "encoding/json"
+        "fmt"
+
+        "github.com/spf13/cobra"
+)
+
+// Global flags
+var (
+        jsonOutput bool
+        quietMode  bool
+)
+
+var rootCmd = &amp;cobra.Command{
+        Use:   "uuidkey",
+        Short: "UUID to Base32-Crockford Key encoder/decoder",
+        Long: `uuidkey is a fast, secure tool for UUID generation and Base32-Crockford encoding.
+
+It provides:
+  - UUID generation (v4, v6, v7)
+  - Base32-Crockford encoding/decoding
+  - API key generation with configurable entropy
+  - Smart input detection (no input = generate)`,
+}
+
+func init() <span class="cov8" title="1">{
+        // Global persistent flags
+        rootCmd.PersistentFlags().BoolVarP(&amp;jsonOutput, "json", "j", false, "Output in JSON format")
+        rootCmd.PersistentFlags().BoolVarP(&amp;quietMode, "quiet", "q", false, "Minimal output")
+        
+        // Disable default completion command
+        rootCmd.CompletionOptions.DisableDefaultCmd = true
+}</span>
+
+// Execute runs the root command
+func Execute() error <span class="cov8" title="1">{
+        return rootCmd.Execute()
+}</span>
+
+// output handles formatting output based on flags
+func output(data map[string]interface{}, defaultOutput string) <span class="cov8" title="1">{
+        // Use the current command if set (for tests), otherwise use rootCmd
+        cmd := getCurrentCommand()
+        out := cmd.OutOrStdout()
+        
+        if jsonOutput </span><span class="cov8" title="1">{
+                encoder := json.NewEncoder(out)
+                // Use compact output to match test expectations
+                _ = encoder.Encode(data)
+        }</span> else<span class="cov8" title="1"> if quietMode &amp;&amp; defaultOutput != "" </span><span class="cov8" title="1">{
+                _, _ = fmt.Fprintln(out, defaultOutput)
+        }</span> else<span class="cov8" title="1"> if defaultOutput != "" </span><span class="cov8" title="1">{
+                _, _ = fmt.Fprintln(out, defaultOutput)
+        }</span>
+}
+
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">package main
+
+import (
+        "fmt"
+        "regexp"
+        "strings"
+
+        "github.com/agentstation/uuidkey"
+        "github.com/gofrs/uuid"
+        "github.com/spf13/cobra"
+)
+
+var (
+        uuidVersion int
+        timeFlag    string
+)
+
+var uuidCmd = &amp;cobra.Command{
+        Use:   "uuid [input]",
+        Short: "Generate or process UUIDs",
+        Long: `Generate new UUIDs or encode/decode based on input.
+
+With no input, generates a new UUID.
+With a UUID as input, encodes it to a key.
+With a key as input, decodes it to a UUID.`,
+        Args: cobra.MaximumNArgs(1),
+        RunE: runUUID,
+        Example: `  # Generate new UUID v4
+  uuidkey uuid
+  
+  # Generate UUID v6 (k-sortable)
+  uuidkey uuid -v 6
+  
+  # Generate UUID v7 (k-sortable, millisecond precision)
+  uuidkey uuid -v 7
+  
+  # Encode UUID to key
+  uuidkey uuid 550e8400-e29b-41d4-a716-446655440000
+  
+  # Decode key to UUID
+  uuidkey uuid 1AGX100-3H9PGEM-2KHCH36-1AM8000`,
+}
+
+func init() <span class="cov8" title="1">{
+        uuidCmd.Flags().IntVarP(&amp;uuidVersion, "version", "v", 4, "UUID version: 4, 6, or 7")
+        uuidCmd.Flags().StringVarP(&amp;timeFlag, "time", "t", "", "Custom timestamp for v6/v7 (RFC3339 format)")
+        rootCmd.AddCommand(uuidCmd)
+}</span>
+
+func runUUID(cmd *cobra.Command, args []string) error <span class="cov8" title="1">{
+        if len(args) == 0 </span><span class="cov8" title="1">{
+                // Generate new UUID
+                u, err := generateUUID()
+                if err != nil </span><span class="cov8" title="1">{
+                        return err
+                }</span>
+                
+                // Also encode to key
+                <span class="cov8" title="1">key, err := uuidkey.Encode(u, getKeyOptions()...)
+                if err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("error encoding UUID: %w", err)
+                }</span>
+                
+                <span class="cov8" title="1">data := map[string]interface{}{
+                        "uuid":    u,
+                        "key":     key.String(),
+                        "version": uuidVersion,
+                }
+                
+                // Add timestamp if provided
+                if timeFlag != "" </span><span class="cov0" title="0">{
+                        data["timestamp"] = timeFlag
+                }</span>
+                
+                <span class="cov8" title="1">if quietMode </span><span class="cov8" title="1">{
+                        output(data, u)
+                }</span> else<span class="cov8" title="1"> if jsonOutput </span><span class="cov8" title="1">{
+                        output(data, "")
+                }</span> else<span class="cov8" title="1"> {
+                        _, _ = fmt.Fprintf(cmd.OutOrStdout(), "UUID: %s\n", u)
+                        _, _ = fmt.Fprintf(cmd.OutOrStdout(), "Key:  %s\n", key.String())
+                }</span>
+                <span class="cov8" title="1">return nil</span>
+        }
+        
+        <span class="cov8" title="1">input := args[0]
+        inputType := detectInputType(input)
+        
+        switch inputType </span>{
+        case "uuid":<span class="cov8" title="1">
+                // Encode UUID to key
+                key, err := uuidkey.Encode(input, getKeyOptions()...)
+                if err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("error encoding UUID: %w", err)
+                }</span>
+                <span class="cov8" title="1">data := map[string]interface{}{"uuid": input, "key": key.String()}
+                if quietMode </span><span class="cov0" title="0">{
+                        output(data, key.String())
+                }</span> else<span class="cov8" title="1"> if jsonOutput </span><span class="cov0" title="0">{
+                        output(data, "")
+                }</span> else<span class="cov8" title="1"> {
+                        _, _ = fmt.Fprintf(cmd.OutOrStdout(), "UUID: %s\n", input)
+                        _, _ = fmt.Fprintf(cmd.OutOrStdout(), "Key:  %s\n", key.String())
+                }</span>
+        case "key":<span class="cov8" title="1">
+                // Decode key to UUID
+                parsedKey, err := uuidkey.Parse(input)
+                if err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("error parsing key: %w", err)
+                }</span>
+                <span class="cov8" title="1">u, err := parsedKey.Decode()
+                if err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("error decoding key: %w", err)
+                }</span>
+                <span class="cov8" title="1">data := map[string]interface{}{"key": input, "uuid": u}
+                if quietMode </span><span class="cov0" title="0">{
+                        output(data, u)
+                }</span> else<span class="cov8" title="1"> if jsonOutput </span><span class="cov0" title="0">{
+                        output(data, "")
+                }</span> else<span class="cov8" title="1"> {
+                        _, _ = fmt.Fprintf(cmd.OutOrStdout(), "Key:  %s\n", input)
+                        _, _ = fmt.Fprintf(cmd.OutOrStdout(), "UUID: %s\n", u)
+                }</span>
+        default:<span class="cov8" title="1">
+                return fmt.Errorf("invalid input: input doesn't match UUID or key pattern")</span>
+        }
+        
+        <span class="cov8" title="1">return nil</span>
+}
+
+// generateUUID generates a new UUID using gofrs/uuid based on the version flag
+func generateUUID() (string, error) <span class="cov8" title="1">{
+        var u uuid.UUID
+        var err error
+        
+        // Check if custom timestamp was requested
+        if timeFlag != "" </span><span class="cov8" title="1">{
+                return "", fmt.Errorf("custom timestamp is not supported in gofrs/uuid v4.4.0 (requires v5+)")
+        }</span>
+        
+        <span class="cov8" title="1">switch uuidVersion </span>{
+        case 4:<span class="cov8" title="1">
+                u, err = uuid.NewV4()</span>
+        case 6:<span class="cov8" title="1">
+                u, err = uuid.NewV6()</span>
+        case 7:<span class="cov8" title="1">
+                u, err = uuid.NewV7()</span>
+        default:<span class="cov8" title="1">
+                return "", fmt.Errorf("unsupported UUID version: %d (supported: 4, 6, 7)", uuidVersion)</span>
+        }
+        
+        <span class="cov8" title="1">if err != nil </span><span class="cov0" title="0">{
+                return "", fmt.Errorf("error generating UUID: %w", err)
+        }</span>
+        <span class="cov8" title="1">return u.String(), nil</span>
+}
+
+// detectInputType determines if input is a UUID, key, or API key
+func detectInputType(input string) string <span class="cov8" title="1">{
+        // Remove any whitespace
+        input = strings.TrimSpace(input)
+        
+        // UUID pattern (with or without hyphens)
+        uuidPattern := regexp.MustCompile(`^[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}$`)
+        if uuidPattern.MatchString(input) </span><span class="cov8" title="1">{
+                return "uuid"
+        }</span>
+        
+        // API key pattern: PREFIX_KEY_CHECKSUM
+        <span class="cov8" title="1">if strings.Count(input, "_") == 2 </span><span class="cov8" title="1">{
+                parts := strings.Split(input, "_")
+                if len(parts) == 3 &amp;&amp; len(parts[2]) == 8 </span><span class="cov8" title="1">{
+                        return "apikey"
+                }</span>
+        }
+        
+        // Key pattern (26-31 uppercase alphanumeric chars, possibly with hyphens)
+        <span class="cov8" title="1">keyPattern := regexp.MustCompile(`^[0-9A-Z\-]{26,31}$`)
+        if keyPattern.MatchString(strings.ToUpper(input)) </span><span class="cov8" title="1">{
+                return "key"
+        }</span>
+        
+        <span class="cov8" title="1">return "unknown"</span>
+}</pre>
+		
+		<pre class="file" id="file8" style="display: none">package main
+
+import (
+        "crypto/sha256"
+        "fmt"
+        "io"
+        "net/http"
+        "os"
+        "path/filepath"
+        "runtime/debug"
+        "strings"
+
+        "github.com/spf13/cobra"
+)
+
+var (
+        verifyChecksum bool
+        verifyOnline   bool
+)
+
+var versionCmd = &amp;cobra.Command{
+        Use:   "version",
+        Short: "Display version and build information",
+        Long: `Display detailed version, build information, and optionally verify binary integrity.
+
+The version command shows:
+  - Version number and build metadata
+  - Git commit and build date
+  - Go version and platform
+  - Binary checksum verification (optional)`,
+        RunE: runVersion,
+        Example: `  # Show version
+  uuidkey version
+  
+  # Verify binary checksum
+  uuidkey version --verify
+  
+  # Verify against online checksums
+  uuidkey version --verify-online`,
+}
+
+func init() <span class="cov8" title="1">{
+        versionCmd.Flags().BoolVar(&amp;verifyChecksum, "verify", false, "Verify binary checksum")
+        versionCmd.Flags().BoolVar(&amp;verifyOnline, "verify-online", false, "Verify against online checksums")
+        rootCmd.AddCommand(versionCmd)
+}</span>
+
+func runVersion(cmd *cobra.Command, args []string) error <span class="cov8" title="1">{
+        // Basic version info
+        versionInfo := map[string]interface{}{
+                "version":   version,
+                "commit":    commit,
+                "date":      date,
+                "built_by":  builtBy,
+                "go":        goVersion,
+                "platform":  platform,
+        }
+        
+        // Add build info from runtime/debug if available
+        if info, ok := debug.ReadBuildInfo(); ok </span><span class="cov8" title="1">{
+                var vcsRevision, vcsTime, vcsModified string
+                for _, setting := range info.Settings </span><span class="cov8" title="1">{
+                        switch setting.Key </span>{
+                        case "vcs.revision":<span class="cov0" title="0">
+                                vcsRevision = setting.Value</span>
+                        case "vcs.time":<span class="cov0" title="0">
+                                vcsTime = setting.Value</span>
+                        case "vcs.modified":<span class="cov0" title="0">
+                                vcsModified = setting.Value</span>
+                        }
+                }
+                <span class="cov8" title="1">if vcsRevision != "" </span><span class="cov0" title="0">{
+                        versionInfo["vcs_revision"] = vcsRevision
+                }</span>
+                <span class="cov8" title="1">if vcsTime != "" </span><span class="cov0" title="0">{
+                        versionInfo["vcs_time"] = vcsTime
+                }</span>
+                <span class="cov8" title="1">if vcsModified != "" </span><span class="cov0" title="0">{
+                        versionInfo["vcs_modified"] = vcsModified == "true"
+                }</span>
+        }
+        
+        // Handle checksum verification
+        <span class="cov8" title="1">if verifyChecksum || verifyOnline </span><span class="cov8" title="1">{
+                checksum, err := calculateSelfChecksum()
+                if err != nil </span><span class="cov0" title="0">{
+                        versionInfo["checksum_error"] = err.Error()
+                }</span> else<span class="cov8" title="1"> {
+                        versionInfo["checksum"] = checksum
+                        
+                        if verifyOnline </span><span class="cov8" title="1">{
+                                valid, err := verifyOnlineChecksum(checksum)
+                                if err != nil </span><span class="cov8" title="1">{
+                                        versionInfo["online_verify_error"] = err.Error()
+                                }</span> else<span class="cov0" title="0"> {
+                                        versionInfo["checksum_verified"] = valid
+                                }</span>
+                        }
+                }
+        }
+        
+        // Output
+        <span class="cov8" title="1">out := cmd.OutOrStdout()
+        
+        if jsonOutput </span><span class="cov8" title="1">{
+                output(versionInfo, "")
+        }</span> else<span class="cov8" title="1"> {
+                _, _ = fmt.Fprintf(out, "uuidkey %s", version)
+                if date != "unknown" </span><span class="cov0" title="0">{
+                        _, _ = fmt.Fprintf(out, " (%s)", date)
+                }</span>
+                <span class="cov8" title="1">_, _ = fmt.Fprintln(out)
+                
+                if !quietMode </span><span class="cov8" title="1">{
+                        _, _ = fmt.Fprintln(out, "\nBuild Information:")
+                        _, _ = fmt.Fprintf(out, "  Commit:    %s\n", commit)
+                        _, _ = fmt.Fprintf(out, "  Built:     %s\n", date)
+                        _, _ = fmt.Fprintf(out, "  Built by:  %s\n", builtBy)
+                        _, _ = fmt.Fprintf(out, "  Go:        %s\n", goVersion)
+                        _, _ = fmt.Fprintf(out, "  Platform:  %s\n", platform)
+                        
+                        if verifyChecksum || verifyOnline </span><span class="cov8" title="1">{
+                                checksum, err := calculateSelfChecksum()
+                                if err != nil </span><span class="cov0" title="0">{
+                                        _, _ = fmt.Fprintf(out, "\n✗ Checksum error: %v\n", err)
+                                }</span> else<span class="cov8" title="1"> {
+                                        _, _ = fmt.Fprintf(out, "\nChecksum:    %s\n", checksum)
+                                        
+                                        if verifyOnline </span><span class="cov8" title="1">{
+                                                valid, err := verifyOnlineChecksum(checksum)
+                                                if err != nil </span><span class="cov8" title="1">{
+                                                        _, _ = fmt.Fprintf(out, "✗ Online verification error: %v\n", err)
+                                                }</span> else<span class="cov0" title="0"> if valid </span><span class="cov0" title="0">{
+                                                        _, _ = fmt.Fprintln(out, "✓ Binary checksum verified")
+                                                }</span> else<span class="cov0" title="0"> {
+                                                        _, _ = fmt.Fprintln(out, "✗ Binary checksum mismatch")
+                                                }</span>
+                                        }
+                                }
+                        }
+                }
+        }
+        
+        <span class="cov8" title="1">return nil</span>
+}
+
+// calculateSelfChecksum calculates SHA256 of the running binary
+func calculateSelfChecksum() (string, error) <span class="cov8" title="1">{
+        executable, err := os.Executable()
+        if err != nil </span><span class="cov0" title="0">{
+                return "", fmt.Errorf("failed to get executable path: %w", err)
+        }</span>
+        
+        // Resolve symlinks
+        <span class="cov8" title="1">executable, err = filepath.EvalSymlinks(executable)
+        if err != nil </span><span class="cov0" title="0">{
+                return "", fmt.Errorf("failed to resolve symlinks: %w", err)
+        }</span>
+        
+        <span class="cov8" title="1">file, err := os.Open(executable)
+        if err != nil </span><span class="cov0" title="0">{
+                return "", fmt.Errorf("failed to open binary: %w", err)
+        }</span>
+        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = file.Close() }</span>()
+        
+        <span class="cov8" title="1">h := sha256.New()
+        if _, err := io.Copy(h, file); err != nil </span><span class="cov0" title="0">{
+                return "", fmt.Errorf("failed to calculate checksum: %w", err)
+        }</span>
+        
+        <span class="cov8" title="1">return fmt.Sprintf("%x", h.Sum(nil)), nil</span>
+}
+
+// verifyOnlineChecksum downloads and verifies checksum from GitHub release
+func verifyOnlineChecksum(localChecksum string) (bool, error) <span class="cov8" title="1">{
+        if version == "dev" </span><span class="cov8" title="1">{
+                return false, fmt.Errorf("cannot verify development version")
+        }</span>
+        
+        // Construct checksums URL
+        <span class="cov8" title="1">url := fmt.Sprintf("https://github.com/agentstation/uuidkey/releases/download/%s/checksums.txt", version)
+        
+        resp, err := http.Get(url)
+        if err != nil </span><span class="cov0" title="0">{
+                return false, fmt.Errorf("failed to download checksums: %w", err)
+        }</span>
+        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = resp.Body.Close() }</span>()
+        
+        <span class="cov8" title="1">if resp.StatusCode != http.StatusOK </span><span class="cov8" title="1">{
+                return false, fmt.Errorf("checksums not found (HTTP %d)", resp.StatusCode)
+        }</span>
+        
+        <span class="cov0" title="0">body, err := io.ReadAll(resp.Body)
+        if err != nil </span><span class="cov0" title="0">{
+                return false, fmt.Errorf("failed to read checksums: %w", err)
+        }</span>
+        
+        // Parse checksums file
+        <span class="cov0" title="0">binaryName := fmt.Sprintf("uuidkey_%s_%s", strings.Replace(platform, "/", "_", 1), version)
+        if strings.Contains(platform, "windows") </span><span class="cov0" title="0">{
+                binaryName += ".exe"
+        }</span>
+        
+        <span class="cov0" title="0">lines := strings.Split(string(body), "\n")
+        for _, line := range lines </span><span class="cov0" title="0">{
+                parts := strings.Fields(line)
+                if len(parts) == 2 &amp;&amp; strings.Contains(parts[1], binaryName) </span><span class="cov0" title="0">{
+                        return parts[0] == localChecksum, nil
+                }</span>
+        }
+        
+        <span class="cov0" title="0">return false, fmt.Errorf("checksum not found for %s", binaryName)</span>
+}</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
