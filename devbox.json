@@ -4,7 +4,8 @@
       "curl@8.6.0",
       "go@1.22.5",
       "golangci-lint@1.60.3",
-      "gomarkdoc@1.1.0"
+      "gomarkdoc@1.1.0",
+      "goreleaser@2.5.1"
     ],
     "shell": {
       "init_hook": [

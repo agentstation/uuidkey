@@ -37,4 +37,7 @@ go.work.sum
 # claude code files
 .claude/
 
+# goreleaser build directory
+dist/
+
 # End of https://www.toptal.com/developers/gitignore/api/go

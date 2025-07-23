@@ -40,10 +40,15 @@ devbox: ## Run Devbox shell
 
 ##@ Install Dependencies
 
-.PHONY: install
-install: ## Download go modules
+.PHONY: deps
+deps: ## Download go modules
 	@echo "Downloading go modules..."
 	go mod download
+
+.PHONY: install
+install: ## Install the uuidkey binary
+	@echo "Installing uuidkey binary..."
+	go install ./cmd/uuidkey
 
 ##@ Development
 
@@ -79,7 +84,48 @@ test: ## Run Go tests
 	@echo "Running go tests..."
 	go test ./... -tags=test
 
+.PHONY: test-cli
+test-cli: ## Run CLI-specific tests
+	@echo "Running CLI tests..."
+	go test -v ./cmd/uuidkey/...
+
 .PHONY: coverage
 coverage: ## Run tests and generate coverage report
 	@echo "Running tests and generating coverage report..."
 	go test -race -coverprofile=coverage.txt -covermode=atomic ./...
+
+##@ Build & Release
+
+.PHONY: build
+build: ## Build the CLI binary
+	@echo "Building uuidkey binary..."
+	go build -o dist/uuidkey ./cmd/uuidkey
+
+.PHONY: build-all
+build-all: ## Build binaries for all platforms
+	@echo "Building binaries for all platforms..."
+	goreleaser build --snapshot --clean
+
+.PHONY: release
+release: ## Create a new release (requires version tag)
+	@echo "Creating release..."
+	@if [ -z "$$(git describe --tags --exact-match 2>/dev/null)" ]; then \
+		echo "Error: No tag found. Please create a tag first using 'make tag VERSION=v1.2.3'"; \
+		exit 1; \
+	fi
+	goreleaser release --clean
+
+.PHONY: release-snapshot
+release-snapshot: ## Test release process locally (doesn't publish)
+	@echo "Testing release process locally..."
+	goreleaser release --snapshot --clean
+
+.PHONY: tag
+tag: ## Create and push a new version tag (usage: make tag VERSION=v1.2.3)
+	@if [ -z "$(VERSION)" ]; then \
+		echo "Error: VERSION is required. Usage: make tag VERSION=v1.2.3"; \
+		exit 1; \
+	fi
+	@echo "Creating tag $(VERSION)..."
+	git tag -a $(VERSION) -m "Release $(VERSION)"
+	@echo "Tag $(VERSION) created. Push with: git push origin $(VERSION)"
