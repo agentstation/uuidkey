@@ -40,6 +40,9 @@ The `uuidkey` package has been implemented in several programming languages:
   - Repository: [github.com/tanhv90/uuidkey](https://github.com/tanhv90/uuidkey)
   - Package: [npm: uuidkey](https://www.npmjs.com/package/uuidkey)
 
+- **.NET/C#** - By [@fremenkiel](https://github.com/Fremenkiel)
+  - Repository: [github.com/Fremenkiel/UuidKey](https://github.com/Fremenkiel/UuidKey)
+
 > Want to add your implementation? Feel free to open a PR to add it to this list!
 
 ## API Key Format
